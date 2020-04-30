@@ -1,0 +1,41 @@
+.infected-toggle
+  display: inline-flex
+  flex-direction: column
+
+  margin: 0 0 15px 15px
+  padding: $infected-toggle__padding
+
+  font-size: $infected-toggle__headerFontSize
+  color: $infected-toggle__headerColor
+
+  border: $infected-toggle__border
+  border-radius: $infected-toggle__border-radius
+
+.infected-toggle__wrapper
+  display: flex
+  margin-top: 10px
+
+.infected-toggle__select
+
+
+.infected-toggle__advantages-wrapper
+  display: flex
+  margin-left: 10px
+
+.infected-toggle__advantage-item
+  color: #000
+
+  padding: $infected-table__item-padding
+  border-radius: $infected-table__item-border-radius
+
+  &:not(:last-of-type)
+    margin-right: 10px
+
+.infected-toggle__advantage-item--cases_delta
+  background: $infected-table__cases
+
+.infected-toggle__advantage-item--cured_delta
+  background: $infected-table__cured
+
+.infected-toggle__advantage-item--deaths_delta
+  background: $infected-table__deaths

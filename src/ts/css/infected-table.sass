@@ -1,0 +1,61 @@
+.infected-table__list
+  display: flex
+  flex-direction: column
+
+  list-style: none
+
+.infected-table__item, .infected-table__header
+  display: flex
+  margin: 5px 10px
+  width: 100%
+
+.infected-table__sub-item, .infected-table__header-item
+  padding: 5px 15px
+  flex-basis: 33%
+  border-bottom: 1px solid #000
+  display: flex
+
+.infected-table__sub-item > span
+  flex-basis: 50%
+  display: flex
+  justify-content: center
+
+.infected-table__header-item
+  font-weight: 700
+
+  &:hover
+    cursor: pointer
+
+.infected-table__inner-cases_delta .infected-table__inner-text
+  background: $infected-table__cases
+
+.infected-table__inner-cured_delta .infected-table__inner-text
+  background: $infected-table__cured
+
+.infected-table__inner-deaths_delta .infected-table__inner-text
+  background: $infected-table__deaths
+
+.infected-table__inner-text
+  padding: $infected-table__item-padding
+  border-radius: $infected-table__item-border-radius
+
+.infected-table__inner-cases, .infected-table__inner-cured, .infected-table__inner-deaths
+  border-right: 1px solid #cecece
+
+.infected-table__sub-item--name, .infected-table__item--name
+  border-right: 1px solid #000
+
+.infected-table__sub-item--cases, .infected-table__item--cases, .infected-table__item--cured, .infected-table__sub-item--cured
+  border-right: 1px solid #000
+  display: flex
+  justify-content: center
+  align-items: center
+
+.infected-table__sub-item--cases_delta, .infected-table__item--cases_delta, .infected-table__item--deaths
+  display: flex
+  justify-content: center
+  align-items: center
+
+
+.infected-table__header
+  list-style: none
