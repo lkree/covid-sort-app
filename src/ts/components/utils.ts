@@ -27,4 +27,4 @@ export const search = (array: Array<IRussiaTotal>, value: string) => {
 };
 
 export const headerText = 'Распостронение COVID-19 в России';
-export const TABLE_CLASS = 'infected-table__list';
+export const TABLE_CLASS = 'infected-table__table';

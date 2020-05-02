@@ -55,10 +55,14 @@ export interface IInit {
   getUserData: () => this;
   handleData: () => this;
   renderData: () => this;
+  getUserDevice: () => this;
 }
 
+type TDevice = 'desktop' | 'mobile' | 'tablet';
+
 export interface IUserData {
-  favourite: string;
+  favourite?: string;
+  device?: TDevice;
 }
 
 export type IUserOption = 'favourite';

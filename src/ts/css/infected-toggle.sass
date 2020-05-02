@@ -2,7 +2,6 @@
   display: inline-flex
   flex-direction: column
 
-  margin: 0 0 15px 15px
   padding: $infected-toggle__padding
 
   font-size: $infected-toggle__headerFontSize
@@ -39,3 +38,12 @@
 
 .infected-toggle__advantage-item--deaths_delta
   background: $infected-table__deaths
+
+
+@media (max-width: 550px)
+  .infected-toggle__wrapper
+    flex-direction: column
+
+  .infected-toggle__advantages-wrapper
+    margin: 10px 0 0
+    justify-content: center

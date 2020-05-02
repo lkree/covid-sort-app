@@ -17,6 +17,13 @@ const app = (): IApp => {
 
           return w;
         },
+        getUserDevice: () => {
+          this.userData.device = window.innerWidth > 1024
+            ? 'desktop'
+            : window.innerWidth > 900 ? 'tablet' : 'mobile';
+
+          return w;
+        },
         fetchData: async () => {
           this.data = await getData();
           console.log(this.data);
@@ -31,7 +38,10 @@ const app = (): IApp => {
           return w;
         },
         getUserData: () => {
-          this.userData = getFromLocalStorage(['favourite']);
+          this.userData = {
+            ...this.userData,
+            ...getFromLocalStorage(['favourite'])
+          };
 
           return w;
         },
@@ -49,6 +59,7 @@ const app = (): IApp => {
 
       (await w
         .showLoader()
+        .getUserDevice()
         .fetchData())
         .handleData()
         .getUserData()
@@ -60,7 +71,7 @@ const app = (): IApp => {
     createListeners() {
       this.l.onHeaderTableClick = (evt: Event) => {
         const data = this.sortedData[0] ? this.sortedData : this.data;
-        const res = sort(data, ((evt.target as HTMLElement).classList[1].split('--')[1] as ISortItem), this.sortType);
+        const res = sort(data, ((evt.target as HTMLElement).classList[0].split('-')[2] as ISortItem), this.sortType);
         this.sortType = this.sortType === 'asc' ? 'desc' : 'asc';
 
         refreshTable(res);
@@ -70,9 +81,8 @@ const app = (): IApp => {
 
         if (value.length > 2) {
           this.sortedData = search(this.data, value);
-          renderTable(this.sortedData, true);
-        }
-        else {
+          renderTable(this.sortedData,true);
+        } else {
           this.sortedData = this.data;
           renderTable(this.data, true);
         }

@@ -5,28 +5,46 @@ export const renderTable: IRenderTable = (data, withDeletion = false) => {
   if (withDeletion)
     document.body.removeChild(document.querySelector(`.${TABLE_CLASS}`));
 
+  const wrapper = document.createElement('ul');
+  wrapper.classList.add(TABLE_CLASS);
+
   const renderBody = () => {
-    const wrapper = document.createElement('ul');
-    wrapper.classList.add(TABLE_CLASS);
+    const wrapper = document.createElement('li');
+    wrapper.classList.add('infected-table__body');
 
     let items: string = '';
 
     data.forEach(city => {
-      items += `<li class="infected-table__item">
-          <div class="infected-table__sub-item infected-table__sub-item--name">${city.name}</div>
-          <div class="infected-table__sub-item infected-table__sub-item--cases">
+      items += `<div class="infected-table__body-item">
+          <div class="infected-table__body-sub-item infected-table__body-sub-item--cases">
             <span class="infected-table__inner-cases">${city.cases}</span>
             <span class="infected-table__inner-cases_delta"><span class="infected-table__inner-text">+ ${city.cases_delta}</span></span>
           </div>
-          <div class="infected-table__sub-item infected-table__sub-item--cured">
+          <div class="infected-table__body-sub-item infected-table__body-sub-item--cured">
             <span class="infected-table__inner-cured">${city.cured}</span>
             <span class="infected-table__inner-cured_delta"><span class="infected-table__inner-text">+ ${city.cured_delta}</span></span>
           </div>
-          <div class="infected-table__sub-item infected-table__sub-item--deaths">
+          <div class="infected-table__body-sub-item infected-table__body-sub-item--deaths">
             <span class="infected-table__inner-deaths">${city.deaths}</span>
             <span class="infected-table__inner-deaths_delta"><span class="infected-table__inner-text">+ ${city.deaths_delta}</span></span>
           </div>
-        </li>`
+        </div>`
+    });
+
+    wrapper.insertAdjacentHTML('afterbegin', items);
+
+    return wrapper;
+  };
+  const renderAside = () => {
+    const wrapper = document.createElement('li');
+    wrapper.classList.add('infected-table__aside');
+
+    let items: string = '';
+
+    data.forEach(city => {
+      items += `<div class="infected-table__aside-item">
+          <div class="infected-table__aside-sub-item infected-table__aside-sub-item--name">${city.name}</div>
+        </div>`
     });
 
     wrapper.insertAdjacentHTML('afterbegin', items);
@@ -34,12 +52,15 @@ export const renderTable: IRenderTable = (data, withDeletion = false) => {
     return wrapper;
   };
 
-  document.body.append(renderBody());
+  wrapper.append(renderAside());
+  wrapper.append(renderBody());
+
+  document.body.append(wrapper);
 };
 
 export const renderPage: IRenderPage = (data: IRussiaTotal[], options: IUserData): void => {
   const search = () => (
-    `<div class="infected-search">
+    `<div class="infected-search infected-header__search">
       <label class="infected-search__label">
         Поиск <input type="text" class="infected-search__input">
       </label>
@@ -47,10 +68,18 @@ export const renderPage: IRenderPage = (data: IRussiaTotal[], options: IUserData
   );
   const renderTableHeader = () => (
     `<ul class="infected-table__header">
-      <li class="infected-table__header-item infected-table__item--name">Область</li>
-      <li class="infected-table__header-item infected-table__item--cases">Больные</li>
-      <li class="infected-table__header-item infected-table__item--cured">Выздоровевшие</li>
-      <li class="infected-table__header-item infected-table__item--deaths">Умершие</li>
+      <li class="infected-table__header-item infected-table__header-item--name">
+        <div class="infected-table__item-name">Область</div>
+      </li>
+      <li class="infected-table__header-item infected-table__header-item--else">
+        <div class="infected-table__item-cases">Больные</div>
+        <div class="infected-table__item-cured">Выздоровевшие</div>
+        <div class="infected-table__item-deaths">Умершие</div>
+      </li>
+      <li class="infected-table__header-nav">
+        <button class="infected-nav__button infected-nav__button--right">-></button>
+        <button class="infected-nav__button infected-nav__button--left"><-</button>
+      </li>
     </ul>`
   );
   const regionToggle = (data: IRussiaTotal[]): string => {
@@ -58,7 +87,7 @@ export const renderPage: IRenderPage = (data: IRussiaTotal[], options: IUserData
       const w: IRegionToggle = {
         createWrapper() {
           w.wrapper = document.createElement('div');
-          w.wrapper.classList.add('infected-toggle');
+          w.wrapper.classList.add('infected-header__toggle', 'infected-toggle');
           w.wrapper.textContent = 'Мой регион: ';
 
           return w;
@@ -91,9 +120,9 @@ export const renderPage: IRenderPage = (data: IRussiaTotal[], options: IUserData
         createAdvantage() {
           w.advantages = `
             <div class='infected-toggle__advantages-wrapper'>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cases_delta">+ ${w.favouriteCity.cases_delta}</div>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cured_delta">+ ${w.favouriteCity.cured_delta}</div>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--deaths_delta">+ ${w.favouriteCity.deaths_delta}</div>
+              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cases_delta">+&nbsp;${w.favouriteCity.cases_delta}</div>
+              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cured_delta">+&nbsp;${w.favouriteCity.cured_delta}</div>
+              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--deaths_delta">+&nbsp;${w.favouriteCity.deaths_delta}</div>
             </div>`;
 
           return this;
@@ -143,16 +172,27 @@ export const renderPage: IRenderPage = (data: IRussiaTotal[], options: IUserData
 };
 
 export const refreshTable: IRenderTable = data => {
-  const items = document.querySelectorAll(`.${TABLE_CLASS} li`);
+  const aside = document.querySelectorAll(`.infected-table__aside-item`);
+  const body = document.querySelectorAll(`.infected-table__body-item`);
 
-  [...items].forEach((item, i) => {
-    item.querySelector('.infected-table__sub-item--name').textContent = data[i].name;
-    item.querySelector('.infected-table__inner-cases').textContent = String(data[i].cases);
-    item.querySelector('.infected-table__inner-cases_delta .infected-table__inner-text').textContent = `+ ${data[i].cases_delta}`;
-    item.querySelector('.infected-table__inner-cured').textContent = String(data[i].cured);
-    item.querySelector('.infected-table__inner-cured_delta .infected-table__inner-text').textContent = `+ ${data[i].cured_delta}`;
-    item.querySelector('.infected-table__inner-deaths').textContent = String(data[i].deaths);
-    item.querySelector('.infected-table__inner-deaths_delta .infected-table__inner-text').textContent = `+ ${data[i].deaths_delta}`;
+  [...aside].forEach((item, i) => {
+    try {
+      item.querySelector('.infected-table__aside-sub-item--name').textContent = data[i].name;
+    } catch({message}) {
+      console.log(message);
+    }
+  });
+  [...body].forEach((item, i) => {
+    try {
+      item.querySelector('.infected-table__inner-cases').textContent = String(data[i].cases);
+      item.querySelector('.infected-table__inner-cases_delta .infected-table__inner-text').textContent = `+ ${data[i].cases_delta}`;
+      item.querySelector('.infected-table__inner-cured').textContent = String(data[i].cured);
+      item.querySelector('.infected-table__inner-cured_delta .infected-table__inner-text').textContent = `+ ${data[i].cured_delta}`;
+      item.querySelector('.infected-table__inner-deaths').textContent = String(data[i].deaths);
+      item.querySelector('.infected-table__inner-deaths_delta .infected-table__inner-text').textContent = `+ ${data[i].deaths_delta}`;
+    } catch({message}) {
+      console.log(message);
+    }
   });
 };
 export const refreshToggle = (data: IRussiaTotal[], city: string) => {
