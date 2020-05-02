@@ -57,7 +57,6 @@ export const renderTable: IRenderTable = (data, withDeletion = false) => {
 
   document.body.append(wrapper);
 };
-
 export const renderPage: IRenderPage = (data: IRussiaTotal[], options: IUserData): void => {
   const search = () => (
     `<div class="infected-search infected-header__search">
@@ -204,4 +203,9 @@ export const refreshToggle = (data: IRussiaTotal[], city: string) => {
 
     element.textContent = `+ ${favouriteCity[(elementType as keyof IRussiaTotal)]}`
   });
+};
+
+export const tableSlide = (vw: number) => {
+  [...document.querySelectorAll('.infected-table__header-item--else, .infected-table__body')]
+    .forEach(part => (<HTMLElement>part).style.transform = `translateX(${vw}vw)`);
 };

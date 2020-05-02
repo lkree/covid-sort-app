@@ -46,6 +46,7 @@ export interface IListeners {
   onHeaderTableClick: (evt: Event) => void;
   onInputChange: (evt: Event) => void;
   onSelectChange: (evt: Event) => void;
+  onSlideChange: (status: number, min: number, max: number, step: number) => Function;
 }
 
 export interface IInit {

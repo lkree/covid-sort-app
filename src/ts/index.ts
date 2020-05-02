@@ -1,6 +1,6 @@
 import getData from "./components/fetchData";
 import loader from "./components/loader";
-import {refreshTable, renderTable, renderPage, refreshToggle} from "./components/render";
+import {refreshTable, renderTable, renderPage, refreshToggle, tableSlide} from "./components/render";
 import {sort, search} from "./components/utils";
 import {ISortItem, IApp, IInit, IRussiaTotal, IAppFunction, IAppVars, IUserData} from "./components/interface";
 
@@ -93,6 +93,24 @@ const app = (): IApp => {
         setToLocalStorage({favourite: (<HTMLSelectElement>target).value});
         refreshToggle(this.data, (<HTMLSelectElement>target).value);
       };
+      this.l.onSlideChange = ((status = 0, max = -100, min = 0, step = 50) => (evt: Event) => {
+        const direction = (<HTMLElement>evt.target).classList[1].split('--')[1];
+
+        if (direction === 'right') {
+          if (status !== max) {
+            status -= step;
+            tableSlide(status);
+          } else
+            return;
+        } else {
+          if (status !== min) {
+            status += step;
+            tableSlide(status);
+          } else
+            return;
+        }
+
+      })();
 
       return this;
     },
@@ -103,6 +121,9 @@ const app = (): IApp => {
         });
       document.querySelector('.infected-search__input').addEventListener('input', this.l.onInputChange);
       document.querySelector('.infected-toggle__select').addEventListener('input', this.l.onSelectChange);
+      [...document.querySelectorAll('.infected-nav__button')].forEach(button => {
+        button.addEventListener('click', this.l.onSlideChange);
+      })
 
       return this;
     },
@@ -111,9 +132,10 @@ const app = (): IApp => {
   return Object.assign(w, ({
     data: ([] as Array<IRussiaTotal>),
     l: {
-      onHeaderTableClick: (evt: Event) => {},
-      onInputChange: (evt: Event) => {},
-      onSelectChange: (evt: Event) => {},
+      onHeaderTableClick: () => {},
+      onInputChange: () => {},
+      onSelectChange: () => {},
+      onSlideChange: () => () => {}
     },
     sortType: 'asc',
     sortItem: ('' as ISortItem),
