@@ -28,3 +28,9 @@ export const search = (array: Array<IRussiaTotal>, value: string) => {
 
 export const headerText = 'Распостронение COVID-19 в России';
 export const TABLE_CLASS = 'infected-table__table';
+export const errorPage = `
+  <main style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh">
+    К сожалению, данные не загрузились :(
+    <button onclick="( () => location.reload() )();">Попробовать ещё раз</button>
+  </main>
+`;

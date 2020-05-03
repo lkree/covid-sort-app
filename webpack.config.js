@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-   mode: 'development',
+   mode: 'production',
    entry: './src/ts/index.ts',
    module: {
       rules: [
@@ -15,6 +15,10 @@ module.exports = {
             use: [
                'style-loader', 'css-loader', 'sass-loader'
             ]
+         },
+         {
+            test: /\.svg?$/,
+            loader: 'file-loader'
          }
       ],
    },

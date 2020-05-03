@@ -1,17 +1,20 @@
 import getData from "./components/fetchData";
 import loader from "./components/loader";
 import {refreshTable, renderTable, renderPage, refreshToggle, tableSlide} from "./components/render";
-import {sort, search} from "./components/utils";
+import {sort, search, errorPage} from "./components/utils";
 import {ISortItem, IApp, IInit, IRussiaTotal, IAppFunction, IAppVars, IUserData} from "./components/interface";
+import {getFromLocalStorage, setToLocalStorage} from "./components/useLocalStorage";
 
 import './css/index.scss';
-import {getFromLocalStorage, setToLocalStorage} from "./components/useLocalStorage";
 
 const app = (): IApp => {
   const w: IAppFunction = {
     async init() {
       const w: IInit = {
 
+        renderError: () => {
+          document.body.insertAdjacentHTML('afterbegin', errorPage);
+        },
         showLoader: () => {
           loader.showLoader();
 
@@ -25,12 +28,19 @@ const app = (): IApp => {
           return w;
         },
         fetchData: async () => {
-          this.data = await getData();
-          console.log(this.data);
+          this.data = await getData()
+            .catch(e => {
+              this.cancel = true;
+              console.log(e);
+
+              w.renderError();
+            });
 
           return w;
         },
         handleData: () => {
+          if (this.cancel) return w;
+
           const {data, dates} = this.data.russia_stat_struct;
           this.data = Object.keys(data).map(key => data[key].info);
           this.currentDate = dates[dates.length - 1];
@@ -38,6 +48,8 @@ const app = (): IApp => {
           return w;
         },
         getUserData: () => {
+          if (this.cancel) return w;
+
           this.userData = {
             ...this.userData,
             ...getFromLocalStorage(['favourite'])
@@ -46,6 +58,8 @@ const app = (): IApp => {
           return w;
         },
         renderData: () => {
+          if (this.cancel) return w;
+
           renderPage(this.data, this.userData);
 
           return w;
@@ -69,6 +83,8 @@ const app = (): IApp => {
       return this;
     },
     createListeners() {
+      if (this.cancel) return this;
+
       this.l.onHeaderTableClick = (evt: Event) => {
         const data = this.sortedData[0] ? this.sortedData : this.data;
         const res = sort(data, ((evt.target as HTMLElement).classList[0].split('-')[2] as ISortItem), this.sortType);
@@ -115,6 +131,8 @@ const app = (): IApp => {
       return this;
     },
     addListeners() {
+      if (this.cancel) return this;
+
       [...document.querySelectorAll('.infected-table__header-item')]
         .forEach(item => {
           item.addEventListener('click', this.l.onHeaderTableClick);
@@ -141,9 +159,10 @@ const app = (): IApp => {
     sortItem: ('' as ISortItem),
     sortedData: [],
     userData: ({} as IUserData),
-    currentDate: ''
+    currentDate: '',
+    cancel: false,
   } as IAppVars));
-}
+};
 (async () => {
     (await
       app()
