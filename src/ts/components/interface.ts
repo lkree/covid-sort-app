@@ -19,6 +19,7 @@ export interface IListeners {
   onInputChange: (evt: Event) => void;
   onSelectChange: (evt: Event) => void;
   onSlideChange: (status: number, min: number, max: number, step: number) => Function;
+  onSlideTouch: (x: number) => Function;
 }
 export interface IInit {
   showLoader: () => this;

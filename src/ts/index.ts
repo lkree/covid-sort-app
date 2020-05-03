@@ -109,8 +109,8 @@ const app = (): IApp => {
         setToLocalStorage({favourite: (<HTMLSelectElement>target).value});
         refreshToggle(this.data, (<HTMLSelectElement>target).value);
       };
-      this.l.onSlideChange = ((status = 0, max = -100, min = 0, step = 50) => (evt: Event) => {
-        const direction = (<HTMLElement>evt.target).classList[1].split('--')[1];
+      this.l.onSlideChange = ((status = 0, max = -100, min = 0, step = 50) => (evt: Event, customDirection: 'right' | 'left') => {
+        const direction = customDirection || (<HTMLElement>evt.target).classList[1].split('--')[1];
 
         if (direction === 'right') {
           if (status !== max) {
@@ -127,6 +127,20 @@ const app = (): IApp => {
         }
 
       })();
+      this.l.onSlideTouch = ((x: number) => (evt: TouchEvent) => {
+        const onTouchEnd = (evt: TouchEvent) => {
+          evt.currentTarget.removeEventListener('touchend', onTouchEnd);
+
+          if (x > evt.changedTouches[0].clientX)
+            this.l.onSlideChange({target: null}, 'right');
+
+          if (x < evt.changedTouches[0].clientX)
+            this.l.onSlideChange({target: null}, 'left');
+        };
+
+        x = evt.changedTouches[0].clientX;
+        evt.currentTarget.addEventListener('touchend', onTouchEnd);
+      })(0);
 
       return this;
     },
@@ -141,7 +155,10 @@ const app = (): IApp => {
       document.querySelector('.infected-toggle__select').addEventListener('input', this.l.onSelectChange);
       [...document.querySelectorAll('.infected-nav__button')].forEach(button => {
         button.addEventListener('click', this.l.onSlideChange);
-      })
+      });
+      document.querySelectorAll('.infected-table__header-item--else, .infected-table__body').forEach(li => {
+        li.addEventListener('touchstart', this.l.onSlideTouch);
+      });
 
       return this;
     },
@@ -153,7 +170,8 @@ const app = (): IApp => {
       onHeaderTableClick: () => {},
       onInputChange: () => {},
       onSelectChange: () => {},
-      onSlideChange: () => () => {}
+      onSlideChange: () => () => {},
+      onSlideTouch: () => () => {},
     },
     sortType: 'asc',
     sortItem: ('' as ISortItem),
