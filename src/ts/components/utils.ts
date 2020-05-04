@@ -43,7 +43,11 @@ export const getThousands = (n: number) => Math.round(n / 1000);
 export const russiaBlock = (info: IRussiaTotal, date: string): string => `
   <section class="russia-info infected-header__russia-info">
     <header class="russia-info__header">${russiaBlockHeader}</header>
-    <p class="russia-info__sub-header">Данные актуальны на <span class="russia-info__date">${date}</span></p>
+    <p class="russia-info__sub-header">Данные актуальны на
+      <span class="russia-info__date">
+        ${new Date(Date.parse(date)).toLocaleString('ru-RU', {year: 'numeric', month: 'numeric', day: 'numeric'})}
+      </span>
+    </p>
     <main class="russia-info__main">
       <div class="russia-info__item russia-info__item--cured">
         <header class="russia-info__item-header russia-info__item-header--cured"><span class="russia-info__cured-delta">+ ${info.cured_delta}</span> (за сутки)</header>
