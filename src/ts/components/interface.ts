@@ -7,6 +7,7 @@ export interface IAppVars {
   sortType: ISortType;
   sortItem: ISortItem;
   sortedData: Array<IRussiaTotal>;
+  russiaInfo: IRussiaTotal;
   cancel: boolean;
 }
 export interface IAppFunction {
@@ -31,10 +32,12 @@ export interface IInit {
   getUserDevice: () => this;
   renderError: () => void;
 }
-export type IUserOption = 'favourite';
+export type TUserOption = 'favourite';
 export interface IUserData {
+  russiaInfo?: IRussiaTotal;
   favourite?: string;
   device?: TDevice;
+  currentDate?: string;
 }
 type TDevice = 'desktop' | 'mobile' | 'tablet';
 export interface IRussiaTotal {
@@ -47,50 +50,78 @@ export interface IRussiaTotal {
   cured_delta: number;
 }
 
+export abstract class CRenderPage {
+  data: IRussiaTotal[];
+  options: IUserData;
+
+  abstract headerWrapper: HTMLDivElement;
+  abstract regionToggle: string;
+  abstract header: string;
+  abstract search: string;
+  abstract tableHeader: string;
+  abstract russiaInfo: string;
+
+  constructor(data: IRussiaTotal[], options: IUserData) {
+    this.data = data;
+    this.options = options;
+  }
+
+  abstract customizeHeaderWrapper: () => this;
+  abstract createRegionToggle: () => this;
+  abstract createHeader: () => this;
+  abstract createSearch: () => this;
+  abstract createTableHeader: () => this;
+  abstract fillContent: () => this;
+  abstract renderAndInsertTable: () => this;
+  abstract createRussiaInfo: () => this;
+}
 export type TRenderPage = (data: Array<IRussiaTotal>, options?: IUserData) => void;
+export abstract class CRenderTable {
+  data: Array<IRussiaTotal>;
+  withDeletion: boolean;
+
+  abstract wrapper: HTMLUListElement;
+  abstract aside: HTMLLIElement;
+  abstract body: HTMLLIElement;
+
+  constructor(data: Array<IRussiaTotal>, withDeletion: boolean) {
+    this.data = data;
+    this.withDeletion = withDeletion;
+  }
+
+  abstract deleteTable: () => this;
+  abstract createWrapper: () => this;
+  abstract createPart: (className: string, wrapperName: 'body' | 'aside', htmlFn: 'getBodyElement' | 'getAsideElement') => this;
+  abstract fillWrapper: () => this;
+  abstract uploadWrapper: () => this;
+  abstract getBodyElement: (city: IRussiaTotal) => string;
+  abstract getAsideElement: (city: IRussiaTotal) => string;
+}
 export type TRenderTable = (data: Array<IRussiaTotal>, withDeletion?: boolean) => void;
-export interface IRegionToggle {
-  wrapper?: HTMLDivElement;
-  favouriteCity?: IRussiaTotal;
-  items?: string;
-  select?: HTMLSelectElement;
-  advantages?: string;
-  createWrapper: () => this;
-  getFavouriteCity: () => this;
-  createSelect: () => this;
-  createOptions: () => this;
-  fillSelect: () => this;
-  createAdvantage: () => this;
-  fillWrapper: () => string;
-}
-export interface IRenderTable {
-  wrapper: HTMLUListElement;
-  aside: HTMLLIElement;
-  body: HTMLLIElement;
+export abstract class CRegionToggle {
+  data: IRussiaTotal[];
+  self: CRenderPage;
 
-  deleteTable: () => this;
-  createWrapper: () => this;
-  createPart: (className: string, wrapperName: 'body' | 'aside', htmlFn: 'getBodyElement' | 'getAsideElement') => this;
-  fillWrapper: () => this;
-  uploadWrapper: () => this;
-  getBodyElement: (city: IRussiaTotal) => string;
-  getAsideElement: (city: IRussiaTotal) => string;
-}
-export interface IRenderPage {
-  customizeHeaderWrapper: () => this;
-  createRegionToggle: () => this;
-  createHeader: () => this;
-  createSearch: () => this;
-  createTableHeader: () => this;
-  fillContent: () => this;
-  renderAndInsertTable: () => this;
+  abstract wrapper: HTMLDivElement;
+  abstract favouriteCity: IRussiaTotal;
+  abstract items: string;
+  abstract select: HTMLSelectElement;
+  abstract advantages: string;
 
-  headerWrapper: HTMLDivElement;
-  regionToggle: string;
-  header: string;
-  search: string;
-  tableHeader: string;
+  constructor(data: IRussiaTotal[], self: CRenderPage) {
+    this.data = data;
+    this.self = self;
+  }
+
+  abstract createWrapper: () => this;
+  abstract getFavouriteCity: () => this;
+  abstract createSelect: () => this;
+  abstract createOptions: () => this;
+  abstract fillSelect: () => this;
+  abstract createAdvantage: () => this;
+  abstract fillWrapper: () => string;
 }
+export type TRegionToggle = (data: IRussiaTotal[], self: CRenderPage) => string;
 
 export interface ILoader {
   class: string;

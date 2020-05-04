@@ -1,5 +1,10 @@
 $itemMargin: 0 15px 15px
 
+.infected-header
+  display: flex
+  justify-content: space-between
+  flex-wrap: wrap
+
 .infected-header__search
   margin: $itemMargin
 
@@ -11,11 +16,25 @@ $itemMargin: 0 15px 15px
 .infected-header__toggle
   margin: $itemMargin
 
+.infected-header__russia-info
+  margin: $itemMargin
 
-@media (max-width: $mobileVersion)
+@media (max-width: 1160px)
   .infected-header__header
+    width: 100%
     order: -2
     margin: $itemMargin
 
+
+@media (max-width: $mobileVersion)
+  .infected-header
+    flex-direction: column
+    justify-content: center
+    align-items: center
+
   .infected-header__toggle
     order: -1
+
+@media (max-width: 650px)
+  .infected-header
+    flex-direction: row

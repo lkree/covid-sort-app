@@ -1,7 +1,7 @@
 import getData from "./components/fetchData";
 import loader from "./components/loader";
-import {refreshTable, renderTable, renderPage, refreshToggle, tableSlide} from "./components/render";
-import {sort, search, errorPage} from "./components/utils";
+import {refreshTable, renderTable, renderPage, refreshToggle} from "./components/render";
+import {sort, search, errorPage, tableSlide} from "./components/utils";
 import {ISortItem, IApp, IInit, IRussiaTotal, IAppFunction, IAppVars, IUserData} from "./components/interface";
 import {getFromLocalStorage, setToLocalStorage} from "./components/useLocalStorage";
 
@@ -42,7 +42,15 @@ const app = (): IApp => {
           if (this.cancel) return w;
 
           const {data, dates} = this.data.russia_stat_struct;
-          this.data = Object.keys(data).map(key => data[key].info);
+          this.data = Object
+            .keys(data)
+            .map(key => data[key].info)
+            .filter(city => {
+              if (city.name === 'Россия')
+                this.russiaInfo = city;
+
+              return city.name !== 'Россия';
+            });
           this.currentDate = dates[dates.length - 1];
 
           return w;
@@ -51,6 +59,8 @@ const app = (): IApp => {
           if (this.cancel) return w;
 
           this.userData = {
+            currentDate: this.currentDate,
+            russiaInfo: this.russiaInfo,
             ...this.userData,
             ...getFromLocalStorage(['favourite'])
           };
@@ -113,19 +123,16 @@ const app = (): IApp => {
         const direction = customDirection || (<HTMLElement>evt.target).classList[1].split('--')[1];
 
         if (direction === 'right') {
-          if (status !== max) {
-            status -= step;
-            tableSlide(status);
-          } else
-            return;
+          status !== max
+            ? status -= step
+            : status = min;
         } else {
-          if (status !== min) {
-            status += step;
-            tableSlide(status);
-          } else
-            return;
+          status !== min
+            ? status += step
+            : status = max;
         }
 
+        tableSlide(status);
       })();
       this.l.onSlideTouch = ((x: number) => (evt: TouchEvent) => {
         const onTouchEnd = (evt: TouchEvent) => {
@@ -179,6 +186,7 @@ const app = (): IApp => {
     userData: ({} as IUserData),
     currentDate: '',
     cancel: false,
+    russiaInfo: ({} as IRussiaTotal),
   } as IAppVars));
 };
 (async () => {

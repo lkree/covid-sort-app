@@ -1,0 +1,110 @@
+$cured-delta-color: #219653
+$cases-delta-color: #4f4f4f
+$deaths-delta-color: #eb5757
+$item-header-color: #999
+
+
+.russia-info
+  display: flex
+  flex-direction: column
+  justify-content: center
+  align-items: center
+  width: 90%
+
+  border: $infected-toggle__border
+  border-radius: $infected-table__item-border-radius
+
+  padding: $infected-toggle__padding
+
+  font-weight: 700
+
+.russia-info__header
+  font-size: 25px
+  margin-bottom: 10px
+
+.russia-info__sub-header
+  margin-bottom: 20px
+  color: $item-header-color
+
+.russia-info__date
+  color: #000
+
+.russia-info__main
+  width: 100%
+
+  display: flex
+  justify-content: space-around
+
+.russia-info__item
+  padding: 5px 15px
+
+.russia-info__border
+  border-right: 1px solid #cecece
+
+.russia-info__item-header
+  color: $item-header-color
+
+.russia-info__item-header--cured
+
+
+.russia-info__item-header--cases
+
+
+.russia-info__item-header--deaths
+
+
+.russia-info__cured-delta
+  color: $cured-delta-color
+
+.russia-info__cases-delta
+  color: $cases-delta-color
+
+.russia-info__deaths-delta
+  color: $deaths-delta-color
+
+.russia-info__item-main
+
+
+.russia-info__item-count
+  font-size: 30px
+  margin: 8px 0
+
+.russia-info__item-info
+  font-size: 18px
+
+@media (max-width: 750px)
+  .russia-info__item
+    width: 49%
+
+  .russia-info__item--cured
+      border-right: solid 1px #ddd
+
+  .russia-info__item--cases
+    text-align: right
+
+  .russia-info__item--deaths
+    width: 100%
+
+    text-align: center
+
+    border-top: solid 1px #ddd
+
+    padding: 15px
+
+  .russia-info
+    margin-bottom: 30px
+
+  .russia-info__border
+    display: none
+
+  .russia-info__main
+    flex-wrap: wrap
+    justify-content: space-between
+
+@media (max-width: 500px)
+  .russia-info
+    width: auto
+
+  .russia-info__item-header
+    display: flex
+    flex-direction: column

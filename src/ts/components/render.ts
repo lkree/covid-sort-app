@@ -1,184 +1,69 @@
-import {TRenderTable, IRussiaTotal, TRenderPage, IUserData, IRegionToggle, IRenderTable, IRenderPage} from "./interface";
-import {sort, headerText, TABLE_CLASS} from "./utils";
+import {
+  TRenderTable,
+  IRussiaTotal,
+  TRenderPage,
+  IUserData,
+  CRenderPage,
+  TRegionToggle,
+  CRegionToggle,
+  CRenderTable
+} from "./interface";
+import {sort, headerText, TABLE_CLASS, russiaBlock} from "./utils";
 
-export const renderTable: TRenderTable = (data, withDeletion = false) => {
-  const w = (): IRenderTable => {
-    const w: Omit<IRenderTable, 'aside' | 'body' | 'wrapper'> = {
-      deleteTable() {
-        withDeletion
-          && document.body.removeChild(document.querySelector(`.${TABLE_CLASS}`));
+class RenderPage implements CRenderPage {
+  data: IRussiaTotal[];
+  options: IUserData;
 
-        return this;
-      },
-      createWrapper() {
-        this.wrapper.classList.add(TABLE_CLASS);
+  headerWrapper = document.createElement('div');
+  regionToggle = '';
+  header = '';
+  search = '';
+  tableHeader = '';
+  russiaInfo = '';
 
-        return this;
-      },
-      createPart(className, wrapperName, htmlFn) {
-        this[wrapperName].classList.add(className);
+  constructor(data: IRussiaTotal[], options: IUserData) {
+    this.data = data;
+    this.options = options;
+  }
 
-        let items: string = '';
+  customizeHeaderWrapper() {
+    this.headerWrapper.classList.add('infected__header', 'infected-header');
 
-        data.forEach(city => items += this[htmlFn](city));
-
-        this[wrapperName].insertAdjacentHTML('afterbegin', items);
-
-        return this;
-      },
-      fillWrapper() {
-        this.wrapper.append(this.aside);
-        this.wrapper.append(this.body);
-
-        return this;
-      },
-      uploadWrapper() {
-        document.body.append(this.wrapper);
-
-        return this;
-      },
-      getAsideElement(city) {
-        return `<div class="infected-table__aside-item">
-          <div class="infected-table__aside-sub-item infected-table__aside-sub-item--name">${city.name}</div>
-        </div>`;
-      },
-      getBodyElement(city) {
-        return `<div class="infected-table__body-item">
-          <div class="infected-table__body-sub-item infected-table__body-sub-item--cases">
-            <span class="infected-table__inner-cases">${city.cases}</span>
-            <span class="infected-table__inner-cases_delta"><span class="infected-table__inner-text">+ ${city.cases_delta}</span></span>
-          </div>
-          <div class="infected-table__body-sub-item infected-table__body-sub-item--cured">
-            <span class="infected-table__inner-cured">${city.cured}</span>
-            <span class="infected-table__inner-cured_delta"><span class="infected-table__inner-text">+ ${city.cured_delta}</span></span>
-          </div>
-          <div class="infected-table__body-sub-item infected-table__body-sub-item--deaths">
-            <span class="infected-table__inner-deaths">${city.deaths}</span>
-            <span class="infected-table__inner-deaths_delta"><span class="infected-table__inner-text">+ ${city.deaths_delta}</span></span>
-          </div>
-        </div>`
-      },
+    return this;
+  }
+  createRegionToggle() {
+    const regionToggle: TRegionToggle = (data: IRussiaTotal[], self: CRenderPage): string => {
+      return new RegionToggle(data, self)
+        .createWrapper()
+        .getFavouriteCity()
+        .createSelect()
+        .createOptions()
+        .fillSelect()
+        .createAdvantage()
+        .fillWrapper()
     };
 
-    return Object.assign(w, {
-      wrapper: document.createElement('ul'),
-      aside: document.createElement('li'),
-      body: document.createElement('li'),
-    });
-  };
+    this.regionToggle = regionToggle(sort(this.data, 'name', 'asc'), this);
 
-  w()
-    .deleteTable()
-    .createWrapper()
-    .createPart('infected-table__body', 'body', 'getBodyElement')
-    .createPart('infected-table__aside', 'aside', 'getAsideElement')
-    .fillWrapper()
-    .uploadWrapper();
-};
-export const renderPage: TRenderPage = (data: IRussiaTotal[], options: IUserData): void => {
-  const w = (): IRenderPage => {
-    const w: Omit<IRenderPage, 'headerWrapper' | 'regionToggle' | 'header' | 'search' | 'tableHeader'> = {
-      customizeHeaderWrapper() {
-        this.headerWrapper.classList.add('infected__header', 'infected-header');
+    return this;
+  }
+  createHeader() {
+    this.header = `<header class="infected-header__header">${headerText}</header>`;
 
-        return this;
-      },
-      createRegionToggle() {
-        const regionToggle = (data: IRussiaTotal[]): string => {
-          const app = (): IRegionToggle => {
-            const w: IRegionToggle = {
-              createWrapper() {
-                w.wrapper = document.createElement('div');
-                w.wrapper.classList.add('infected-header__toggle', 'infected-toggle');
-                w.wrapper.textContent = 'Мой регион: ';
-
-                return w;
-              },
-              getFavouriteCity() {
-                w.favouriteCity = options?.favourite
-                  ? data.find(city => city.name === options.favourite)
-                  : { cases_delta: 0, deaths_delta: 0, cured_delta: 0, name: '', deaths: 0, cured: 0, cases: 0 };
-
-                return w;
-              },
-              createSelect() {
-                w.select = document.createElement('select');
-                w.select.classList.add('infected-toggle__select');
-
-                return w;
-              },
-              createOptions() {
-                data.forEach(city => {
-                  w.items += `<option value="${city.name}" ${city.name === options.favourite && 'selected'}>${city.name}</option>`
-                });
-
-                return w;
-              },
-              fillSelect() {
-                w.select.insertAdjacentHTML('afterbegin', w.items);
-
-                return w;
-              },
-              createAdvantage() {
-                w.advantages = `
-            <div class='infected-toggle__advantages-wrapper'>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cases_delta">+&nbsp;${w.favouriteCity.cases_delta}</div>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cured_delta">+&nbsp;${w.favouriteCity.cured_delta}</div>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--deaths_delta">+&nbsp;${w.favouriteCity.deaths_delta}</div>
-            </div>`;
-
-                return this;
-              },
-              fillWrapper() {
-                const tempWrapper = document.createElement('div');
-                tempWrapper.classList.add('infected-toggle__wrapper');
-                tempWrapper.append(w.select);
-                tempWrapper.insertAdjacentHTML('beforeend', w.advantages);
-                w.wrapper.append(tempWrapper);
-
-                return w.wrapper.outerHTML;
-              }
-            }
-
-            return Object.assign(w, {
-              wrapper: null,
-              favouriteCity: null,
-              items: '',
-              select: null
-            });
-          };
-
-          return app()
-            .createWrapper()
-            .getFavouriteCity()
-            .createSelect()
-            .createOptions()
-            .fillSelect()
-            .createAdvantage()
-            .fillWrapper()
-        };
-
-        this.regionToggle = regionToggle(sort(data, 'name', 'asc'));
-
-        return this;
-      },
-      createHeader() {
-        this.header = `<header class="infected-header__header">${headerText}</header>`;
-
-        return this;
-      },
-      createSearch() {
-        this.search = `<div class="infected-search infected-header__search">
+    return this;
+  }
+  createSearch() {
+    this.search = `<div class="infected-search infected-header__search">
                         <label class="infected-search__label">
                           Поиск <input type="text" class="infected-search__input">
                         </label>
                       </div>`
 
-        return this;
-      },
-      createTableHeader() {
-        this.tableHeader = (
-          `<ul class="infected-table__header">
+    return this;
+  }
+  createTableHeader() {
+    this.tableHeader = (
+      `<ul class="infected-table__header">
               <li class="infected-table__header-item infected-table__header-item--name">
                 <div class="infected-table__item-name">Область</div>
               </li>
@@ -192,44 +77,185 @@ export const renderPage: TRenderPage = (data: IRussiaTotal[], options: IUserData
                 <button class="infected-nav__button infected-nav__button--left"><-</button>
               </li>
             </ul>`
-        )
+    );
 
-        return this;
-      },
-      fillContent() {
-        this.headerWrapper.insertAdjacentHTML('afterbegin', this.regionToggle);
-        this.headerWrapper.insertAdjacentHTML('afterbegin', this.header);
-        this.headerWrapper.insertAdjacentHTML('afterbegin', this.search);
+    return this;
+  }
+  createRussiaInfo() {
+    this.russiaInfo = russiaBlock(this.options.russiaInfo, this.options.currentDate);
 
-        document.body.insertAdjacentHTML('afterbegin', this.tableHeader);
-        document.body.insertAdjacentHTML('afterbegin', this.headerWrapper.outerHTML);
+    return this;
+  }
+  fillContent() {
+    this.headerWrapper.insertAdjacentHTML('afterbegin', this.russiaInfo);
+    this.headerWrapper.insertAdjacentHTML('afterbegin', this.regionToggle);
+    this.headerWrapper.insertAdjacentHTML('afterbegin', this.header);
+    this.headerWrapper.insertAdjacentHTML('afterbegin', this.search);
 
-        return this;
-      },
-      renderAndInsertTable() {
-        renderTable(data);
+    document.body.insertAdjacentHTML('afterbegin', this.tableHeader);
+    document.body.insertAdjacentHTML('afterbegin', this.headerWrapper.outerHTML);
 
-        return this;
-      },
-    };
+    return this;
+  }
+  renderAndInsertTable() {
+    renderTable(this.data);
 
-    return Object.assign(w, {
-      headerWrapper: document.createElement('div'),
-      regionToggle: '',
-      header: '',
-      search: '',
-      tableHeader: '',
+    return this;
+  }
+}
+class RegionToggle implements CRegionToggle {
+  data: IRussiaTotal[];
+  self: CRenderPage;
+  wrapper = document.createElement('div');
+  favouriteCity: IRussiaTotal;
+  items = '';
+  select = document.createElement('select');
+  advantages = '';
+
+  constructor(data: IRussiaTotal[], self: CRenderPage) {
+    this.data = data;
+    this.self = self;
+  }
+  createWrapper() {
+    this.wrapper = document.createElement('div');
+    this.wrapper.classList.add('infected-header__toggle', 'infected-toggle');
+    this.wrapper.textContent = 'Мой регион: ';
+
+    return this;
+  }
+  getFavouriteCity() {
+    this.favouriteCity = this.self.options?.favourite
+      ? this.data.find(city => city.name === this.self.options?.favourite)
+      : {cases_delta: 0, deaths_delta: 0, cured_delta: 0, name: '', deaths: 0, cured: 0, cases: 0};
+
+    return this;
+  }
+  createSelect() {
+    this.select = document.createElement('select');
+    this.select.classList.add('infected-toggle__select');
+
+    return this;
+  }
+  createOptions() {
+    this.data.forEach(city => {
+      this.items += `<option value="${city.name}" ${city.name === this.self.options?.favourite && 'selected'}>${city.name}</option>`
     });
-  };
 
-  w()
+    return this;
+  }
+  fillSelect() {
+    this.select.insertAdjacentHTML('afterbegin', this.items);
+
+    return this;
+  }
+  createAdvantage() {
+    this.advantages = `
+            <div class='infected-toggle__advantages-wrapper'>
+              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cases_delta">+&nbsp;${this.favouriteCity.cases_delta}</div>
+              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cured_delta">+&nbsp;${this.favouriteCity.cured_delta}</div>
+              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--deaths_delta">+&nbsp;${this.favouriteCity.deaths_delta}</div>
+            </div>`;
+
+    return this;
+  }
+  fillWrapper() {
+    const tempWrapper = document.createElement('div');
+    tempWrapper.classList.add('infected-toggle__wrapper');
+    tempWrapper.append(this.select);
+    tempWrapper.insertAdjacentHTML('beforeend', this.advantages);
+    this.wrapper.append(tempWrapper);
+
+    return this.wrapper.outerHTML;
+  }
+}
+class RenderTable implements CRenderTable {
+  wrapper = document.createElement('ul');
+  aside = document.createElement('li');
+  body = document.createElement('li');
+  data: Array<IRussiaTotal>;
+  withDeletion = false;
+
+  constructor(data: Array<IRussiaTotal>, withDeletion: boolean) {
+    this.data = data;
+    this.withDeletion = withDeletion;
+  }
+
+  deleteTable() {
+    this.withDeletion
+      && document.body.removeChild(document.querySelector(`.${TABLE_CLASS}`));
+
+    return this;
+  }
+  createWrapper() {
+    this.wrapper.classList.add(TABLE_CLASS);
+
+    return this;
+  }
+  createPart(className: string, wrapperName: 'body' | 'aside', htmlFn: 'getBodyElement' | 'getAsideElement') {
+    this[wrapperName].classList.add(className);
+
+    let items: string = '';
+
+    this.data.forEach(city => items += this[htmlFn](city));
+
+    this[wrapperName].insertAdjacentHTML('afterbegin', items);
+
+    return this;
+  }
+  fillWrapper() {
+    this.wrapper.append(this.aside);
+    this.wrapper.append(this.body);
+
+    return this;
+  }
+  uploadWrapper() {
+    document.body.append(this.wrapper);
+
+    return this;
+  }
+  getAsideElement(city: IRussiaTotal) {
+    return `<div class="infected-table__aside-item">
+          <div class="infected-table__aside-sub-item infected-table__aside-sub-item--name">${city.name}</div>
+        </div>`;
+  }
+  getBodyElement(city: IRussiaTotal) {
+    return `<div class="infected-table__body-item">
+          <div class="infected-table__body-sub-item infected-table__body-sub-item--cases">
+            <span class="infected-table__inner-cases">${city.cases}</span>
+            <span class="infected-table__inner-cases_delta"><span class="infected-table__inner-text">+ ${city.cases_delta}</span></span>
+          </div>
+          <div class="infected-table__body-sub-item infected-table__body-sub-item--cured">
+            <span class="infected-table__inner-cured">${city.cured}</span>
+            <span class="infected-table__inner-cured_delta"><span class="infected-table__inner-text">+ ${city.cured_delta}</span></span>
+          </div>
+          <div class="infected-table__body-sub-item infected-table__body-sub-item--deaths">
+            <span class="infected-table__inner-deaths">${city.deaths}</span>
+            <span class="infected-table__inner-deaths_delta"><span class="infected-table__inner-text">+ ${city.deaths_delta}</span></span>
+          </div>
+        </div>`
+  }
+}
+
+
+export const renderPage: TRenderPage = (data: IRussiaTotal[], options: IUserData): void => {
+  new RenderPage(data, options)
     .customizeHeaderWrapper()
     .createRegionToggle()
     .createHeader()
     .createSearch()
     .createTableHeader()
+    .createRussiaInfo()
     .fillContent()
     .renderAndInsertTable();
+};
+export const renderTable: TRenderTable = (data, withDeletion = false): void => {
+  new RenderTable(data, withDeletion)
+    .deleteTable()
+    .createWrapper()
+    .createPart('infected-table__body', 'body', 'getBodyElement')
+    .createPart('infected-table__aside', 'aside', 'getAsideElement')
+    .fillWrapper()
+    .uploadWrapper();
 };
 
 export const refreshTable: TRenderTable = data => {
@@ -257,9 +283,4 @@ export const refreshToggle = (data: IRussiaTotal[], city: string) => {
 
     element.textContent = `+ ${favouriteCity[(elementType as keyof IRussiaTotal)]}`
   });
-};
-
-export const tableSlide = (vw: number) => {
-  [...document.querySelectorAll('.infected-table__header-item--else, .infected-table__body')]
-    .forEach((part: HTMLElement) => part.style.transform = `translateX(${vw}vw)`);
 };
