@@ -9,7 +9,7 @@ $item-header-color: #999
   flex-direction: column
   justify-content: center
   align-items: center
-  width: 90%
+  width: 100%
 
   border: $infected-toggle__border
   border-radius: $infected-table__item-border-radius
@@ -71,6 +71,10 @@ $item-header-color: #999
 
 .russia-info__item-info
   font-size: 18px
+
+@media (max-width: $mobileVersion)
+  .russia-info
+    width: auto
 
 @media (max-width: 750px)
   .russia-info__item
