@@ -36,7 +36,7 @@ $infected_table-header-size--mobile: 50%
 
 .infected-table__aside-item, .infected-table__item-cases, .infected-table__item-cured, .infected-table__item-deaths, .infected-table__item-name, .infected-table__body-sub-item
   border-right: 1px solid #000
-  padding: 5px 15px
+  padding: 5px 10px
   border-bottom: 1px solid #000
   background: #fff
 
@@ -84,7 +84,7 @@ $infected_table-header-size--mobile: 50%
 
 @media (max-width: 750px)
   .infected-table__aside-item, .infected-table__body-sub-item
-    height: 80px
+    height: 60px
 
     display: flex
     justify-content: center
@@ -92,3 +92,7 @@ $infected_table-header-size--mobile: 50%
 
   .infected-table__aside-sub-item
     white-space: normal
+
+  .infected-table__aside-item
+    justify-content: flex-start
+    font-size: 14px
