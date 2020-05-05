@@ -4,14 +4,27 @@ import {refreshTable, renderTable, renderPage, refreshToggle} from "./components
 import {sort, search, errorPage, tableSlide} from "./components/utils";
 import {ISortItem, IApp, IInit, IRussiaTotal, IAppFunction, IAppVars, IUserData} from "./components/interface";
 import {getFromLocalStorage, setToLocalStorage} from "./components/useLocalStorage";
+import {
+  onHeaderTableClick,
+  onInputChange,
+  onSelectChange,
+  onSlideChange,
+  onSlideTouch, onUpdateButtonClick
+} from "./components/eventListeners";
 
 import './css/index.scss';
 
 const app = (): IApp => {
   const w: IAppFunction = {
-    async init() {
+    async init(reInit) {
       const w: IInit = {
 
+        reInit: () => {
+          if (reInit)
+            document.body.innerHTML = '';
+
+          return w;
+        },
         renderError: () => {
           document.body.insertAdjacentHTML('afterbegin', errorPage);
         },
@@ -82,6 +95,7 @@ const app = (): IApp => {
       };
 
       (await w
+        .reInit()
         .showLoader()
         .getUserDevice()
         .fetchData())
@@ -95,59 +109,26 @@ const app = (): IApp => {
     createListeners() {
       if (this.cancel) return this;
 
-      this.l.onHeaderTableClick = (evt: Event) => {
-        const data = this.sortedData[0] ? this.sortedData : this.data;
-        const res = sort(data, ((evt.target as HTMLElement).classList[0].split('-')[2] as ISortItem), this.sortType);
-        this.sortType = this.sortType === 'asc' ? 'desc' : 'asc';
-
-        refreshTable(res);
+      (this.l as IAppVars['l']) = {
+        onHeaderTableClick: (evt: Event) => {
+          onHeaderTableClick(this, sort, refreshTable, evt);
+        },
+        onInputChange: (evt: Event) => {
+          onInputChange(this, renderTable, search, evt);
+        },
+        onSelectChange: (evt: Event) => {
+          onSelectChange(this, setToLocalStorage, refreshToggle, evt);
+        },
+        onSlideChange: (evt: Event, customDirection: 'right' | 'left') => {
+          onSlideChange(evt, customDirection, tableSlide);
+        },
+        onSlideTouch: (evt: TouchEvent) => {
+          onSlideTouch(this.l.onSlideChange, evt);
+        },
+        onUpdateButtonClick: (evt: Event) => {
+          onUpdateButtonClick(appInit);
+        },
       };
-      this.l.onInputChange = (evt: Event) => {
-        const {value} = (evt.target as HTMLInputElement);
-
-        if (value.length > 2) {
-          this.sortedData = search(this.data, value);
-          renderTable(this.sortedData,true);
-        } else {
-          this.sortedData = this.data;
-          renderTable(this.data, true);
-        }
-      };
-      this.l.onSelectChange = (evt: Event) => {
-        const {target} = evt;
-
-        setToLocalStorage({favourite: (<HTMLSelectElement>target).value});
-        refreshToggle(this.data, (<HTMLSelectElement>target).value);
-      };
-      this.l.onSlideChange = ((status = 0, max = -100, min = 0, step = 50) => (evt: Event, customDirection: 'right' | 'left') => {
-        const direction = customDirection || (<HTMLElement>evt.target).classList[1].split('--')[1];
-
-        if (direction === 'right') {
-          status !== max
-            ? status -= step
-            : status = min;
-        } else {
-          status !== min
-            ? status += step
-            : status = max;
-        }
-
-        tableSlide(status);
-      })();
-      this.l.onSlideTouch = ((x: number) => (evt: TouchEvent) => {
-        const onTouchEnd = (evt: TouchEvent) => {
-          evt.currentTarget.removeEventListener('touchend', onTouchEnd);
-
-          if (x > evt.changedTouches[0].clientX)
-            this.l.onSlideChange({target: null}, 'right');
-
-          if (x < evt.changedTouches[0].clientX)
-            this.l.onSlideChange({target: null}, 'left');
-        };
-
-        x = evt.changedTouches[0].clientX;
-        evt.currentTarget.addEventListener('touchend', onTouchEnd);
-      })(0);
 
       return this;
     },
@@ -166,6 +147,7 @@ const app = (): IApp => {
       document.querySelectorAll('.infected-table__header-item--else, .infected-table__body').forEach(li => {
         li.addEventListener('touchstart', this.l.onSlideTouch);
       });
+      document.querySelector('.russia-info__update-button').addEventListener('click', this.l.onUpdateButtonClick);
 
       return this;
     },
@@ -179,6 +161,7 @@ const app = (): IApp => {
       onSelectChange: () => {},
       onSlideChange: () => () => {},
       onSlideTouch: () => () => {},
+      onUpdateButtonClick: () => {},
     },
     sortType: 'asc',
     sortItem: ('' as ISortItem),
@@ -189,10 +172,13 @@ const app = (): IApp => {
     russiaInfo: ({} as IRussiaTotal),
   } as IAppVars));
 };
-(async () => {
-    (await
-      app()
-      .init())
+
+const appInit = async (reInit = false): Promise<void> => {
+  (await
+    app()
+      .init(reInit))
       .createListeners()
       .addListeners();
-})();
+};
+
+appInit();

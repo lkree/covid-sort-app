@@ -11,12 +11,30 @@ $item-header-color: #999
   align-items: center
   width: 100%
 
+  position: relative
+
   border: $infected-toggle__border
   border-radius: $infected-table__item-border-radius
 
   padding: $infected-toggle__padding
 
   font-weight: 700
+
+.russia-info__update-button
+  width: 20px
+  height: 20px
+
+  border: none
+
+  background: url('./../../assets/img/update-icon.svg') no-repeat
+  background-size: contain
+
+  position: absolute
+  top: 5px
+  right: 5px
+
+  &:hover
+    cursor: pointer
 
 .russia-info__header
   font-size: 25px

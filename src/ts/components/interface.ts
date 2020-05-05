@@ -11,7 +11,7 @@ export interface IAppVars {
   cancel: boolean;
 }
 export interface IAppFunction {
-  init: () => Promise<this>;
+  init: (reInit: boolean) => Promise<this>;
   createListeners: () => this;
   addListeners: () => this;
 }
@@ -19,10 +19,12 @@ export interface IListeners {
   onHeaderTableClick: (evt: Event) => void;
   onInputChange: (evt: Event) => void;
   onSelectChange: (evt: Event) => void;
-  onSlideChange: (status: number, min: number, max: number, step: number) => Function;
-  onSlideTouch: (x: number) => Function;
+  onSlideChange: (evt: Event, customDirection: 'right' | 'left') => void;
+  onSlideTouch: (evt: TouchEvent) => void;
+  onUpdateButtonClick: (evt: Event) => void;
 }
 export interface IInit {
+  reInit: () => this;
   showLoader: () => this;
   hideLoader: () => this;
   fetchData: () => Promise<this>;
@@ -133,3 +135,31 @@ export interface ILoader {
 
 export type ISortType = 'asc' | 'desc';
 export type ISortItem = 'name' | 'cases' | 'cases_delta';
+
+export interface IEventListeners {
+  onHeaderTableClick: (
+    self: {data: Array<IRussiaTotal>, sortedData:  [] | Array<IRussiaTotal>, sortType: ISortType},
+    sort: Function,
+    refreshTable: Function,
+    evt: Event
+  ) => void;
+  onInputChange: (
+    self: {sortedData: [] | Array<IRussiaTotal>, data: Array<IRussiaTotal>},
+    renderTable: Function,
+    search: Function,
+    evt: Event
+  ) => void;
+  onSelectChange: (
+    self: {data: Array<IRussiaTotal>},
+    setToLocalStorage: Function,
+    refreshToggle: Function,
+    evt: Event
+  ) => void;
+  onSlideChange: (
+    evt: Event,
+    customDirection: 'right' | 'left',
+    tableSlide: Function
+  ) => void;
+  onSlideTouch: (onSlideChange: Function, evt: TouchEvent) => void;
+  onUpdateButtonClick: (app: Function) => void;
+}

@@ -42,6 +42,7 @@ export const russiaBlockHeader = 'Статистика по России';
 export const getThousands = (n: number) => Math.round(n / 1000);
 export const russiaBlock = (info: IRussiaTotal, date: string): string => `
   <section class="russia-info infected-header__russia-info">
+    <button class="russia-info__update-button"></button>
     <header class="russia-info__header">${russiaBlockHeader}</header>
     <p class="russia-info__sub-header">Данные актуальны на
       <span class="russia-info__date">

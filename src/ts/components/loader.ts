@@ -4,9 +4,13 @@ const loader: ILoader = {
   class: 'lds-dual-ring',
   _getHtml(): string { return `<div class="${this.class}"></div>` },
   _setHTML(html: string): void {
-    html
-      ? document.body.insertAdjacentHTML("beforeend", html)
-      : document.body.removeChild(document.body.querySelector(`.${this.class}`));
+    try {
+      html
+        ? document.body.insertAdjacentHTML("beforeend", html)
+        : document.body.removeChild(document.body.querySelector(`.${this.class}`));
+    } catch ({message}) {
+      console.log(message);
+    }
   },
   hideLoader(): void {
     this._setHTML('');
