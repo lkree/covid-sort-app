@@ -8,7 +8,16 @@ import {
   CRegionToggle,
   CRenderTable
 } from "./interface";
-import {sort, headerText, TABLE_CLASS, russiaBlock} from "./utils";
+import {
+  sort,
+  TABLE_CLASS,
+  russiaBlock,
+  headerHTML,
+  searchHTML,
+  tableHeaderHTML,
+  toggleAdvantages,
+  asideElement, bodyElement
+} from "./utils";
 
 class RenderPage implements CRenderPage {
   data: IRussiaTotal[];
@@ -48,36 +57,17 @@ class RenderPage implements CRenderPage {
     return this;
   }
   createHeader() {
-    this.header = `<header class="infected-header__header">${headerText}</header>`;
+    this.header = headerHTML;
 
     return this;
   }
   createSearch() {
-    this.search = `<div class="infected-search infected-header__search">
-                        <label class="infected-search__label">
-                          Поиск <input type="text" class="infected-search__input">
-                        </label>
-                      </div>`
+    this.search = searchHTML;
 
     return this;
   }
   createTableHeader() {
-    this.tableHeader = (
-      `<ul class="infected-table__header">
-              <li class="infected-table__header-item infected-table__header-item--name">
-                <div class="infected-table__item-name">Область</div>
-              </li>
-              <li class="infected-table__header-item infected-table__header-item--else">
-                <div class="infected-table__item-cases">Больные</div>
-                <div class="infected-table__item-cured">Выздоровевшие</div>
-                <div class="infected-table__item-deaths">Умершие</div>
-              </li>
-              <li class="infected-table__header-nav">
-                <button class="infected-nav__button infected-nav__button--right">-></button>
-                <button class="infected-nav__button infected-nav__button--left"><-</button>
-              </li>
-            </ul>`
-    );
+    this.tableHeader = tableHeaderHTML;
 
     return this;
   }
@@ -149,12 +139,7 @@ class RegionToggle implements CRegionToggle {
     return this;
   }
   createAdvantage() {
-    this.advantages = `
-            <div class='infected-toggle__advantages-wrapper'>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cases_delta">+&nbsp;${this.favouriteCity.cases_delta}</div>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--cured_delta">+&nbsp;${this.favouriteCity.cured_delta}</div>
-              <div class="infected-toggle__advantage-item infected-toggle__advantage-item--deaths_delta">+&nbsp;${this.favouriteCity.deaths_delta}</div>
-            </div>`;
+    this.advantages = toggleAdvantages(this.favouriteCity);
 
     return this;
   }
@@ -214,25 +199,10 @@ class RenderTable implements CRenderTable {
     return this;
   }
   getAsideElement(city: IRussiaTotal) {
-    return `<div class="infected-table__aside-item">
-          <div class="infected-table__aside-sub-item infected-table__aside-sub-item--name">${city.name}</div>
-        </div>`;
+    return asideElement(city);
   }
   getBodyElement(city: IRussiaTotal) {
-    return `<div class="infected-table__body-item">
-          <div class="infected-table__body-sub-item infected-table__body-sub-item--cases">
-            <span class="infected-table__inner-cases">${city.cases}</span>
-            <span class="infected-table__inner-cases_delta"><span class="infected-table__inner-text">+ ${city.cases_delta}</span></span>
-          </div>
-          <div class="infected-table__body-sub-item infected-table__body-sub-item--cured">
-            <span class="infected-table__inner-cured">${city.cured}</span>
-            <span class="infected-table__inner-cured_delta"><span class="infected-table__inner-text">+ ${city.cured_delta}</span></span>
-          </div>
-          <div class="infected-table__body-sub-item infected-table__body-sub-item--deaths">
-            <span class="infected-table__inner-deaths">${city.deaths}</span>
-            <span class="infected-table__inner-deaths_delta"><span class="infected-table__inner-text">+ ${city.deaths_delta}</span></span>
-          </div>
-        </div>`
+    return bodyElement(city);
   }
 }
 
