@@ -4,6 +4,7 @@ export const sort = (array: IRussiaTotal[], sortItem: ISortItem, sortType: ISort
   array = array.sort((a, b) => {
       const {[sortItem]: item1} = a;
       const {[sortItem]: item2} = b;
+
       if (item1 > item2) {
         return sortType === 'asc' ? 1 : -1;
       }
