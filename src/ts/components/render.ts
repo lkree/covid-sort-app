@@ -125,7 +125,7 @@ class RegionToggle implements CRegionToggle {
   }
   getFavouriteCity() {
     this.favouriteCity = this.self.options?.favourite
-      ? this.data.find(city => city.name === this.self.options?.favourite)
+      ? this.data.find(city => city.name === this.self.options.favourite)
       : {cases_delta: 0, deaths_delta: 0, cured_delta: 0, name: '', deaths: 0, cured: 0, cases: 0};
 
     return this;

@@ -12,6 +12,8 @@ export const getFromLocalStorage = (names: TUserOption[]): IUserData => {
 
 export const setToLocalStorage = (obj: IUserData): boolean => {
   return Object.keys(obj).some((key: keyof IUserData) => {
-    localStorage.setItem(key, JSON.stringify(obj[key]));
+    const value = typeof obj[key] !== 'string' ? JSON.stringify(obj[key]) : obj[key];
+
+    localStorage.setItem(key, value as string);
   });
 };
