@@ -2,180 +2,211 @@ import getData from "./components/fetchData";
 import loader from "./components/loader";
 import {refreshTable, renderTable, renderPage, refreshToggle} from "./components/render";
 import {sort, search, errorPage, tableSlide} from "./components/utils";
-import {ISortItem, IApp, IInit, IRussiaTotal, IAppFunction, IAppVars, IUserData} from "./components/interface";
+import {
+  ACApp,
+  IListeners,
+  IRussiaTotal,
+  ISortType,
+  ISortItem,
+  IUserData, TApp, ACInit, TFetchData
+} from "./components/interface";
 import {getFromLocalStorage, setToLocalStorage} from "./components/useLocalStorage";
 import {
   onHeaderTableClick,
   onInputChange,
   onSelectChange,
   onSlideChange,
-  onSlideTouch, onUpdateButtonClick
+  onSlideTouch,
+  onUpdateButtonClick,
 } from "./components/eventListeners";
 
 import './css/index.scss';
 
-const app = (): IApp => {
-  const w: IAppFunction = {
-    async init(reInit) {
-      const w: IInit = {
-
-        reInit: () => {
-          if (reInit)
-            document.body.innerHTML = '';
-
-          return w;
-        },
-        renderError: () => {
-          document.body.insertAdjacentHTML('afterbegin', errorPage);
-        },
-        showLoader: () => {
-          loader.showLoader();
-
-          return w;
-        },
-        getUserDevice: () => {
-          this.userData.device = window.innerWidth > 1024
-            ? 'desktop'
-            : window.innerWidth > 900 ? 'tablet' : 'mobile';
-
-          return w;
-        },
-        fetchData: async () => {
-          this.data = await getData()
-            .catch(e => {
-              this.cancel = true;
-              console.log(e);
-
-              w.renderError();
-            });
-
-          return w;
-        },
-        handleData: () => {
-          if (this.cancel) return w;
-
-          const {data, dates} = this.data.russia_stat_struct;
-          this.data = Object
-            .keys(data)
-            .map(key => data[key].info)
-            .filter(city => {
-              if (city.name === 'Россия')
-                this.russiaInfo = city;
-
-              return city.name !== 'Россия';
-            });
-          this.currentDate = dates[dates.length - 1];
-
-          return w;
-        },
-        getUserData: () => {
-          if (this.cancel) return w;
-
-          this.userData = {
-            currentDate: this.currentDate,
-            russiaInfo: this.russiaInfo,
-            ...this.userData,
-            ...getFromLocalStorage(['favourite'])
-          };
-
-          return w;
-        },
-        renderData: () => {
-          if (this.cancel) return w;
-
-          renderPage(this.data, this.userData);
-
-          return w;
-        },
-        hideLoader: () => {
-          loader.hideLoader();
-
-          return w;
-        },
-      };
-
-      (await w
-        .reInit()
-        .showLoader()
-        .getUserDevice()
-        .fetchData())
-        .handleData()
-        .getUserData()
-        .renderData()
-        .hideLoader();
-
-      return this;
-    },
-    createListeners() {
-      if (this.cancel) return this;
-
-      (this.l as IAppVars['l']) = {
-        onHeaderTableClick: (evt: Event) => {
-          onHeaderTableClick(this, sort, refreshTable, evt);
-        },
-        onInputChange: (evt: Event) => {
-          onInputChange(this, renderTable, search, evt);
-        },
-        onSelectChange: (evt: Event) => {
-          onSelectChange(this, setToLocalStorage, refreshToggle, evt);
-        },
-        onSlideChange: (evt: Event, customDirection: 'right' | 'left') => {
-          onSlideChange(evt, customDirection, tableSlide);
-        },
-        onSlideTouch: (evt: TouchEvent) => {
-          onSlideTouch(this.l.onSlideChange, evt);
-        },
-        onUpdateButtonClick: (evt: Event) => {
-          onUpdateButtonClick(appInit);
-        },
-      };
-
-      return this;
-    },
-    addListeners() {
-      if (this.cancel) return this;
-
-      [...document.querySelectorAll('.infected-table__header-item')]
-        .forEach(item => {
-          item.addEventListener('click', this.l.onHeaderTableClick);
-        });
-      document.querySelector('.infected-search__input').addEventListener('input', this.l.onInputChange);
-      document.querySelector('.infected-toggle__select').addEventListener('input', this.l.onSelectChange);
-      [...document.querySelectorAll('.infected-nav__button')].forEach(button => {
-        button.addEventListener('click', this.l.onSlideChange);
-      });
-      document.querySelectorAll('.infected-table__header-item--else, .infected-table__body').forEach(li => {
-        li.addEventListener('touchstart', this.l.onSlideTouch);
-      });
-      document.querySelector('.russia-info__update-button').addEventListener('click', this.l.onUpdateButtonClick);
-
-      return this;
-    },
+class App implements ACApp {
+  data: Array<IRussiaTotal> = [];
+  l: IListeners = {
+    onHeaderTableClick: () => {},
+    onInputChange: () => {},
+    onSelectChange: () => {},
+    onSlideChange: () => () => {},
+    onSlideTouch: () => () => {},
+    onUpdateButtonClick: () => {},
   };
+  sortType: ISortType = 'asc';
+  sortItem: ISortItem | '' = '';
+  sortedData: Array<IRussiaTotal> = [];
+  userData: IUserData = {};
+  currentDate: string = '';
+  cancel: boolean = false;
+  russiaInfo: IRussiaTotal;
 
-  return Object.assign(w, ({
-    data: ([] as Array<IRussiaTotal>),
-    l: {
-      onHeaderTableClick: () => {},
-      onInputChange: () => {},
-      onSelectChange: () => {},
-      onSlideChange: () => () => {},
-      onSlideTouch: () => () => {},
-      onUpdateButtonClick: () => {},
-    },
-    sortType: 'asc',
-    sortItem: ('' as ISortItem),
-    sortedData: [],
-    userData: ({} as IUserData),
-    currentDate: '',
-    cancel: false,
-    russiaInfo: ({} as IRussiaTotal),
-  } as IAppVars));
-};
+  async init(reInit: boolean) {
+    class Init implements ACInit {
+      self: ACApp;
+      reInit: boolean;
 
-const appInit = async (reInit = false): Promise<void> => {
+      data: TFetchData;
+
+      constructor(reInit: boolean, self: ACApp) {
+        this.self = self;
+        this.reInit = reInit;
+      }
+
+      reInitiate() {
+        if (reInit)
+        document.body.innerHTML = '';
+
+        return this;
+      }
+      renderError() {
+        document.body.insertAdjacentHTML('afterbegin', errorPage);
+      }
+      showLoader() {
+        loader.showLoader();
+
+        return this;
+      }
+      getUserDevice() {
+        this.self.userData.device = window.innerWidth > 1024
+          ? 'desktop'
+          : window.innerWidth > 900 ? 'tablet' : 'mobile';
+
+        return this;
+      }
+      async fetchData() {
+        this.data = await getData()
+          .catch(e => {
+          this.self.cancel = true;
+          console.log(e);
+
+          this.renderError();
+        }) || {
+          russia_stat_struct: {
+            data: {
+              1: {
+                info: {
+                  cases_delta: 0,
+                  deaths: 0,
+                  deaths_delta: 0,
+                  cured: 0,
+                  cured_delta: 0,
+                  cases: 0,
+                  name: ''
+                }
+              }
+            },
+            dates: ['a', 'b'],
+          }
+        };
+
+      return this;
+    }
+      handleData() {
+        if (this.self.cancel) return this;
+
+        const {data, dates} = this.data.russia_stat_struct;
+        this.self.data = Object
+          .keys(data)
+          .map((key: '1') => data[key].info)
+          .filter(city => {
+            if (city.name === 'Россия')
+              this.self.russiaInfo = city;
+
+            return city.name !== 'Россия';
+          });
+      this.self.currentDate = dates[dates.length - 1];
+
+      return this;
+    }
+      getUserData() {
+        if (this.self.cancel) return this;
+
+        this.self.userData = {
+          currentDate: this.self.currentDate,
+          russiaInfo: this.self.russiaInfo,
+          ...this.self.userData,
+          ...getFromLocalStorage(['favourite'])
+      };
+
+      return this;
+    }
+      renderData() {
+        if (this.self.cancel) return this;
+
+        renderPage(this.self.data, this.self.userData);
+
+        return this;
+    }
+      hideLoader() {
+        loader.hideLoader();
+
+        return this;
+    }
+    }
+
+    (await
+      new Init(reInit, this)
+      .reInitiate()
+      .showLoader()
+      .getUserDevice()
+      .fetchData())
+      .handleData()
+      .getUserData()
+      .renderData()
+      .hideLoader();
+
+    return this;
+  }
+  createListeners() {
+    if (this.cancel) return this;
+
+    this.l = {
+      onHeaderTableClick: (evt: Event) => {
+        onHeaderTableClick(this, sort, refreshTable, evt);
+      },
+      onInputChange: (evt: Event) => {
+        onInputChange(this, renderTable, search, evt);
+      },
+      onSelectChange: (evt: Event) => {
+        onSelectChange(this, setToLocalStorage, refreshToggle, evt);
+      },
+      onSlideChange: (evt: Event, customDirection?: 'right' | 'left') => {
+        onSlideChange(evt, tableSlide, customDirection);
+      },
+      onSlideTouch: (evt: TouchEvent) => {
+        onSlideTouch(this.l.onSlideChange, evt);
+      },
+      onUpdateButtonClick: () => {
+        onUpdateButtonClick(appInit);
+      },
+    };
+
+    return this;
+  }
+  addListeners() {
+    if (this.cancel) return this;
+
+    [...document.querySelectorAll('.infected-table__header-item')]
+      .forEach(item => {
+        item.addEventListener('click', this.l.onHeaderTableClick);
+      });
+    document.querySelector('.infected-search__input').addEventListener('input', this.l.onInputChange);
+    document.querySelector('.infected-toggle__select').addEventListener('input', this.l.onSelectChange);
+    [...document.querySelectorAll('.infected-nav__button')].forEach(button => {
+      button.addEventListener('click', this.l.onSlideChange);
+    });
+    document.querySelectorAll('.infected-table__header-item--else, .infected-table__body').forEach(li => {
+      li.addEventListener('touchstart', this.l.onSlideTouch);
+    });
+    document.querySelector('.russia-info__update-button').addEventListener('click', this.l.onUpdateButtonClick);
+
+    return this;
+  }
+}
+
+const appInit: TApp = async (reInit = false): Promise<void> => {
   (await
-    app()
+    new App()
       .init(reInit))
       .createListeners()
       .addListeners();

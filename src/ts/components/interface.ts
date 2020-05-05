@@ -1,27 +1,60 @@
-export interface IApp extends IAppFunction, IAppVars {}
+export abstract class ACApp {
+  abstract currentDate: string;
+  abstract userData: IUserData;
+  abstract data: Array<IRussiaTotal>;
+  abstract l: IListeners;
+  abstract sortType: ISortType;
+  abstract sortItem: ISortItem | '';
+  abstract sortedData: Array<IRussiaTotal> | [];
+  abstract russiaInfo: IRussiaTotal;
+  abstract cancel: boolean;
+
+  abstract init: (reInit: boolean) => Promise<this>;
+  abstract createListeners: () => this;
+  abstract addListeners: () => this;
+}
+export type TApp = (reInit?: boolean) => Promise<void>;
+export abstract class ACInit {
+  self: ACApp;
+  reInit: boolean;
+
+  abstract data: TFetchData;
+
+  constructor(reInit: boolean, self: ACApp) {
+    this.self = self;
+    this.reInit = reInit;
+  }
+
+  abstract reInitiate: () => this;
+  abstract showLoader: () => this;
+  abstract hideLoader: () => this;
+  abstract fetchData: () => Promise<this>;
+  abstract getUserData: () => this;
+  abstract handleData: () => this;
+  abstract renderData: () => this;
+  abstract getUserDevice: () => this;
+  abstract renderError: () => void;
+}
+
+
 export interface IAppVars {
   currentDate: string;
-  userData: IUserData;
-  data: Array<IRussiaTotal>;
+  userData: IUserData | {};
+  data: Array<IRussiaTotal> | [];
   l: IListeners;
   sortType: ISortType;
-  sortItem: ISortItem;
-  sortedData: Array<IRussiaTotal>;
-  russiaInfo: IRussiaTotal;
+  sortItem: ISortItem | '';
+  sortedData: Array<IRussiaTotal> | [];
+  russiaInfo: IRussiaTotal | {};
   cancel: boolean;
-}
-export interface IAppFunction {
-  init: (reInit: boolean) => Promise<this>;
-  createListeners: () => this;
-  addListeners: () => this;
 }
 export interface IListeners {
   onHeaderTableClick: (evt: Event) => void;
   onInputChange: (evt: Event) => void;
   onSelectChange: (evt: Event) => void;
-  onSlideChange: (evt: Event, customDirection: 'right' | 'left') => void;
+  onSlideChange: (evt: Event, customDirection?: 'right' | 'left') => void;
   onSlideTouch: (evt: TouchEvent) => void;
-  onUpdateButtonClick: (evt: Event) => void;
+  onUpdateButtonClick: () => void;
 }
 export interface IInit {
   reInit: () => this;
@@ -52,7 +85,7 @@ export interface IRussiaTotal {
   cured_delta: number;
 }
 
-export abstract class CRenderPage {
+export abstract class ACRenderPage {
   data: IRussiaTotal[];
   options: IUserData;
 
@@ -78,7 +111,7 @@ export abstract class CRenderPage {
   abstract createRussiaInfo: () => this;
 }
 export type TRenderPage = (data: Array<IRussiaTotal>, options?: IUserData) => void;
-export abstract class CRenderTable {
+export abstract class ACRenderTable {
   data: Array<IRussiaTotal>;
   withDeletion: boolean;
 
@@ -100,9 +133,9 @@ export abstract class CRenderTable {
   abstract getAsideElement: (city: IRussiaTotal) => string;
 }
 export type TRenderTable = (data: Array<IRussiaTotal>, withDeletion?: boolean) => void;
-export abstract class CRegionToggle {
+export abstract class ACRegionToggle {
   data: IRussiaTotal[];
-  self: CRenderPage;
+  self: ACRenderPage;
 
   abstract wrapper: HTMLDivElement;
   abstract favouriteCity: IRussiaTotal;
@@ -110,7 +143,7 @@ export abstract class CRegionToggle {
   abstract select: HTMLSelectElement;
   abstract advantages: string;
 
-  constructor(data: IRussiaTotal[], self: CRenderPage) {
+  constructor(data: IRussiaTotal[], self: ACRenderPage) {
     this.data = data;
     this.self = self;
   }
@@ -123,7 +156,7 @@ export abstract class CRegionToggle {
   abstract createAdvantage: () => this;
   abstract fillWrapper: () => string;
 }
-export type TRegionToggle = (data: IRussiaTotal[], self: CRenderPage) => string;
+export type TRegionToggle = (data: IRussiaTotal[], self: ACRenderPage) => string;
 
 export interface ILoader {
   class: string;
@@ -157,9 +190,20 @@ export interface IEventListeners {
   ) => void;
   onSlideChange: (
     evt: Event,
-    customDirection: 'right' | 'left',
-    tableSlide: Function
+    tableSlide: Function,
+    customDirection?: 'right' | 'left',
   ) => void;
   onSlideTouch: (onSlideChange: Function, evt: TouchEvent) => void;
   onUpdateButtonClick: (app: Function) => void;
 }
+
+export type TFetchData = {
+  russia_stat_struct: {
+    data: {
+      1: {
+        info: IRussiaTotal
+      },
+    },
+    dates: string[],
+  }
+};

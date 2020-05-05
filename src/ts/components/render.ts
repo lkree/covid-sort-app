@@ -3,10 +3,10 @@ import {
   IRussiaTotal,
   TRenderPage,
   IUserData,
-  CRenderPage,
+  ACRenderPage,
   TRegionToggle,
-  CRegionToggle,
-  CRenderTable
+  ACRegionToggle,
+  ACRenderTable
 } from "./interface";
 import {
   sort,
@@ -19,7 +19,7 @@ import {
   asideElement, bodyElement
 } from "./utils";
 
-class RenderPage implements CRenderPage {
+class RenderPage implements ACRenderPage {
   data: IRussiaTotal[];
   options: IUserData;
 
@@ -41,7 +41,7 @@ class RenderPage implements CRenderPage {
     return this;
   }
   createRegionToggle() {
-    const regionToggle: TRegionToggle = (data: IRussiaTotal[], self: CRenderPage): string => {
+    const regionToggle: TRegionToggle = (data: IRussiaTotal[], self: ACRenderPage): string => {
       return new RegionToggle(data, self)
         .createWrapper()
         .getFavouriteCity()
@@ -93,16 +93,16 @@ class RenderPage implements CRenderPage {
     return this;
   }
 }
-class RegionToggle implements CRegionToggle {
+class RegionToggle implements ACRegionToggle {
   data: IRussiaTotal[];
-  self: CRenderPage;
+  self: ACRenderPage;
   wrapper = document.createElement('div');
   favouriteCity: IRussiaTotal;
   items = '';
   select = document.createElement('select');
   advantages = '';
 
-  constructor(data: IRussiaTotal[], self: CRenderPage) {
+  constructor(data: IRussiaTotal[], self: ACRenderPage) {
     this.data = data;
     this.self = self;
   }
@@ -153,7 +153,7 @@ class RegionToggle implements CRegionToggle {
     return this.wrapper.outerHTML;
   }
 }
-class RenderTable implements CRenderTable {
+class RenderTable implements ACRenderTable {
   wrapper = document.createElement('ul');
   aside = document.createElement('li');
   body = document.createElement('li');

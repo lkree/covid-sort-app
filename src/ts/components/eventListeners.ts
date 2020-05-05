@@ -41,8 +41,8 @@ export const onSelectChange: IEventListeners['onSelectChange'] = (
 };
 export const onSlideChange: IEventListeners['onSlideChange'] = ((status = 0, max = -100, min = 0, step = 50) => (
   evt: Event,
-  customDirection: 'right' | 'left',
-  tableSlide: Function
+  tableSlide: Function,
+  customDirection?: 'right' | 'left',
 ) => {
   const direction = customDirection || (<HTMLElement>evt.target).classList[1].split('--')[1];
 
