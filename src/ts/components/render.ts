@@ -19,24 +19,16 @@ import {
   asideElement, bodyElement
 } from "./utils";
 
-class RenderPage implements ACRenderPage {
-  data: IRussiaTotal[];
-  options: IUserData;
-
-  headerWrapper = document.createElement('div');
-  regionToggle = '';
-  header = '';
-  search = '';
-  tableHeader = '';
-  russiaInfo = '';
-
-  constructor(data: IRussiaTotal[], options: IUserData) {
-    this.data = data;
-    this.options = options;
-  }
+class RenderPage extends ACRenderPage {
+  protected _headerWrapper = document.createElement('div');
+  protected _regionToggle = '';
+  protected _header = '';
+  protected _search = '';
+  protected _tableHeader = '';
+  protected _russiaInfo = '';
 
   customizeHeaderWrapper() {
-    this.headerWrapper.classList.add('infected__header', 'infected-header');
+    this._headerWrapper.classList.add('infected__header', 'infected-header');
 
     return this;
   }
@@ -52,38 +44,38 @@ class RenderPage implements ACRenderPage {
         .fillWrapper()
     };
 
-    this.regionToggle = regionToggle(sort(this.data, 'name', 'asc'), this);
+    this._regionToggle = regionToggle(sort(this.data, 'name', 'asc'), this);
 
     return this;
   }
   createHeader() {
-    this.header = headerHTML;
+    this._header = headerHTML;
 
     return this;
   }
   createSearch() {
-    this.search = searchHTML;
+    this._search = searchHTML;
 
     return this;
   }
   createTableHeader() {
-    this.tableHeader = tableHeaderHTML;
+    this._tableHeader = tableHeaderHTML;
 
     return this;
   }
   createRussiaInfo() {
-    this.russiaInfo = russiaBlock(this.options.russiaInfo, this.options.currentDate);
+    this._russiaInfo = russiaBlock(this.options.russiaInfo, this.options.currentDate);
 
     return this;
   }
   fillContent() {
-    this.headerWrapper.insertAdjacentHTML('afterbegin', this.russiaInfo);
-    this.headerWrapper.insertAdjacentHTML('afterbegin', this.regionToggle);
-    this.headerWrapper.insertAdjacentHTML('afterbegin', this.header);
-    this.headerWrapper.insertAdjacentHTML('afterbegin', this.search);
+    this._headerWrapper.insertAdjacentHTML('afterbegin', this._russiaInfo);
+    this._headerWrapper.insertAdjacentHTML('afterbegin', this._regionToggle);
+    this._headerWrapper.insertAdjacentHTML('afterbegin', this._header);
+    this._headerWrapper.insertAdjacentHTML('afterbegin', this._search);
 
-    document.body.insertAdjacentHTML('afterbegin', this.tableHeader);
-    document.body.insertAdjacentHTML('afterbegin', this.headerWrapper.outerHTML);
+    document.body.insertAdjacentHTML('afterbegin', this._tableHeader);
+    document.body.insertAdjacentHTML('afterbegin', this._headerWrapper.outerHTML);
 
     return this;
   }
@@ -93,108 +85,98 @@ class RenderPage implements ACRenderPage {
     return this;
   }
 }
-class RegionToggle implements ACRegionToggle {
-  data: IRussiaTotal[];
-  self: ACRenderPage;
-  wrapper = document.createElement('div');
-  favouriteCity: IRussiaTotal;
-  items = '';
-  select = document.createElement('select');
-  advantages = '';
+class RegionToggle extends ACRegionToggle {
+  protected _wrapper = document.createElement('div');
+  protected _favouriteCity: IRussiaTotal;
+  protected _items = '';
+  protected _select = document.createElement('select');
+  protected _advantages = '';
 
-  constructor(data: IRussiaTotal[], self: ACRenderPage) {
-    this.data = data;
-    this.self = self;
-  }
   createWrapper() {
-    this.wrapper = document.createElement('div');
-    this.wrapper.classList.add('infected-header__toggle', 'infected-toggle');
-    this.wrapper.textContent = 'Мой регион: ';
+    this._wrapper = document.createElement('div');
+    this._wrapper.classList.add('infected-header__toggle', 'infected-toggle');
+    this._wrapper.textContent = 'Мой регион: ';
 
     return this;
   }
   getFavouriteCity() {
-    this.favouriteCity = this.self.options?.favourite
-      ? this.data.find(city => city.name === this.self.options.favourite)
+    this._favouriteCity = this._renderPage.options?.favourite
+      ? this.data.find(city => city.name === this._renderPage.options.favourite)
       : {cases_delta: 0, deaths_delta: 0, cured_delta: 0, name: '', deaths: 0, cured: 0, cases: 0};
 
     return this;
   }
   createSelect() {
-    this.select = document.createElement('select');
-    this.select.classList.add('infected-toggle__select');
+    this._select = document.createElement('select');
+    this._select.classList.add('infected-toggle__select');
 
     return this;
   }
   createOptions() {
     this.data.forEach(city => {
-      this.items += `<option value="${city.name}" ${city.name === this.self.options?.favourite && 'selected'}>${city.name}</option>`
+      this._items += `<option value="${city.name}" ${city.name === this._renderPage.options?.favourite && 'selected'}>${city.name}</option>`
     });
 
     return this;
   }
   fillSelect() {
-    this.select.insertAdjacentHTML('afterbegin', this.items);
+    this._select.insertAdjacentHTML('afterbegin', this._items);
 
     return this;
   }
   createAdvantage() {
-    this.advantages = toggleAdvantages(this.favouriteCity);
+    this._advantages = toggleAdvantages(this._favouriteCity);
 
     return this;
   }
   fillWrapper() {
     const tempWrapper = document.createElement('div');
-    tempWrapper.classList.add('infected-toggle__wrapper');
-    tempWrapper.append(this.select);
-    tempWrapper.insertAdjacentHTML('beforeend', this.advantages);
-    this.wrapper.append(tempWrapper);
 
-    return this.wrapper.outerHTML;
+    tempWrapper.classList.add('infected-toggle__wrapper');
+    tempWrapper.append(this._select);
+    tempWrapper.insertAdjacentHTML('beforeend', this._advantages);
+
+    this._wrapper.append(tempWrapper);
+
+    return this._wrapper.outerHTML;
   }
 }
-class RenderTable implements ACRenderTable {
-  wrapper = document.createElement('ul');
-  aside = document.createElement('li');
-  body = document.createElement('li');
-  data: Array<IRussiaTotal>;
-  withDeletion = false;
-
-  constructor(data: Array<IRussiaTotal>, withDeletion: boolean) {
-    this.data = data;
-    this.withDeletion = withDeletion;
-  }
+class RenderTable extends ACRenderTable {
+  protected _wrapper = document.createElement('ul');
+  protected _aside = document.createElement('li');
+  protected _body = document.createElement('li');
+  protected _data: Array<IRussiaTotal>;
 
   deleteTable() {
-    this.withDeletion
+    this._withDeletion
       && document.body.removeChild(document.querySelector(`.${TABLE_CLASS}`));
 
     return this;
   }
   createWrapper() {
-    this.wrapper.classList.add(TABLE_CLASS);
+    this._wrapper.classList.add(TABLE_CLASS);
 
     return this;
   }
-  createPart(className: string, wrapperName: 'body' | 'aside', htmlFn: 'getBodyElement' | 'getAsideElement') {
+  createPart(className: string, wrapperName: '_body' | '_aside', htmlFn: 'getBodyElement' | 'getAsideElement') {
     this[wrapperName].classList.add(className);
 
     let items: string = '';
 
-    this.data.forEach(city => items += this[htmlFn](city));
+    this._data.forEach(city => items += this[htmlFn](city));
 
     this[wrapperName].insertAdjacentHTML('afterbegin', items);
 
     return this;
   }
   fillWrapper() {
-    this.wrapper.append(this.aside);
-    this.wrapper.append(this.body);
+    this._wrapper.append(this._aside);
+    this._wrapper.append(this._body);
 
     return this;
   }
   uploadWrapper() {
-    document.body.append(this.wrapper);
+    document.body.append(this._wrapper);
 
     return this;
   }
@@ -222,8 +204,8 @@ export const renderTable: TRenderTable = (data, withDeletion = false): void => {
   new RenderTable(data, withDeletion)
     .deleteTable()
     .createWrapper()
-    .createPart('infected-table__body', 'body', 'getBodyElement')
-    .createPart('infected-table__aside', 'aside', 'getAsideElement')
+    .createPart('infected-table__body', '_body', 'getBodyElement')
+    .createPart('infected-table__aside', '_aside', 'getAsideElement')
     .fillWrapper()
     .uploadWrapper();
 };

@@ -4,50 +4,32 @@ export abstract class ACApp {
   abstract data: Array<IRussiaTotal>;
   abstract l: IListeners;
   abstract sortType: ISortType;
-  abstract sortItem: ISortItem | '';
-  abstract sortedData: Array<IRussiaTotal> | [];
+  abstract sortItem: ISortItem;
+  abstract sortedData: Array<IRussiaTotal>;
   abstract russiaInfo: IRussiaTotal;
   abstract cancel: boolean;
 
-  abstract init: (reInit: boolean) => Promise<this>;
-  abstract createListeners: () => this;
-  abstract addListeners: () => this;
+  abstract init(reInit: boolean): Promise<this>;
+  abstract createListeners(): this;
+  abstract addListeners(): this;
 }
 export type TApp = (reInit?: boolean) => Promise<void>;
 export abstract class ACInit {
-  self: ACApp;
-  reInit: boolean;
-
   abstract data: TFetchData;
 
-  constructor(reInit: boolean, self: ACApp) {
-    this.self = self;
-    this.reInit = reInit;
-  }
+  constructor(protected reInit: boolean, protected _app: ACApp) {}
 
-  abstract reInitiate: () => this;
-  abstract showLoader: () => this;
-  abstract hideLoader: () => this;
-  abstract fetchData: () => Promise<this>;
-  abstract getUserData: () => this;
-  abstract handleData: () => this;
-  abstract renderData: () => this;
-  abstract getUserDevice: () => this;
-  abstract renderError: () => void;
+  abstract reInitiate(): this;
+  abstract showLoader(): this;
+  abstract hideLoader(): this;
+  abstract fetchData(): Promise<this>;
+  abstract getUserData(): this;
+  abstract handleData(): this;
+  abstract renderData(): this;
+  abstract getUserDevice(): this;
+  abstract renderError(): void;
 }
 
-
-export interface IAppVars {
-  currentDate: string;
-  userData: IUserData | {};
-  data: Array<IRussiaTotal> | [];
-  l: IListeners;
-  sortType: ISortType;
-  sortItem: ISortItem | '';
-  sortedData: Array<IRussiaTotal> | [];
-  russiaInfo: IRussiaTotal | {};
-  cancel: boolean;
-}
 export interface IListeners {
   onHeaderTableClick: (evt: Event) => void;
   onInputChange: (evt: Event) => void;
@@ -55,17 +37,6 @@ export interface IListeners {
   onSlideChange: (evt: Event, customDirection?: 'right' | 'left') => void;
   onSlideTouch: (evt: TouchEvent) => void;
   onUpdateButtonClick: () => void;
-}
-export interface IInit {
-  reInit: () => this;
-  showLoader: () => this;
-  hideLoader: () => this;
-  fetchData: () => Promise<this>;
-  getUserData: () => this;
-  handleData: () => this;
-  renderData: () => this;
-  getUserDevice: () => this;
-  renderError: () => void;
 }
 export type TUserOption = 'favourite';
 export interface IUserData {
@@ -86,75 +57,57 @@ export interface IRussiaTotal {
 }
 
 export abstract class ACRenderPage {
-  data: IRussiaTotal[];
-  options: IUserData;
+  protected _headerWrapper: HTMLDivElement;
+  protected _regionToggle: string;
+  protected _header: string;
+  protected _search: string;
+  protected _tableHeader: string;
+  protected _russiaInfo: string;
 
-  abstract headerWrapper: HTMLDivElement;
-  abstract regionToggle: string;
-  abstract header: string;
-  abstract search: string;
-  abstract tableHeader: string;
-  abstract russiaInfo: string;
+  constructor(public data: IRussiaTotal[], public options: IUserData) {}
 
-  constructor(data: IRussiaTotal[], options: IUserData) {
-    this.data = data;
-    this.options = options;
-  }
-
-  abstract customizeHeaderWrapper: () => this;
-  abstract createRegionToggle: () => this;
-  abstract createHeader: () => this;
-  abstract createSearch: () => this;
-  abstract createTableHeader: () => this;
-  abstract fillContent: () => this;
-  abstract renderAndInsertTable: () => this;
-  abstract createRussiaInfo: () => this;
+  abstract customizeHeaderWrapper(): this;
+  abstract createRegionToggle(): this;
+  abstract createHeader(): this;
+  abstract createSearch(): this;
+  abstract createTableHeader(): this;
+  abstract fillContent(): this;
+  abstract renderAndInsertTable(): this;
+  abstract createRussiaInfo(): this;
 }
 export type TRenderPage = (data: Array<IRussiaTotal>, options?: IUserData) => void;
 export abstract class ACRenderTable {
-  data: Array<IRussiaTotal>;
-  withDeletion: boolean;
+  protected _wrapper: HTMLUListElement;
+  protected _aside: HTMLLIElement;
+  protected _body: HTMLLIElement;
 
-  abstract wrapper: HTMLUListElement;
-  abstract aside: HTMLLIElement;
-  abstract body: HTMLLIElement;
+  constructor(protected _data: Array<IRussiaTotal>, protected _withDeletion: boolean) {}
 
-  constructor(data: Array<IRussiaTotal>, withDeletion: boolean) {
-    this.data = data;
-    this.withDeletion = withDeletion;
-  }
-
-  abstract deleteTable: () => this;
-  abstract createWrapper: () => this;
-  abstract createPart: (className: string, wrapperName: 'body' | 'aside', htmlFn: 'getBodyElement' | 'getAsideElement') => this;
-  abstract fillWrapper: () => this;
-  abstract uploadWrapper: () => this;
-  abstract getBodyElement: (city: IRussiaTotal) => string;
-  abstract getAsideElement: (city: IRussiaTotal) => string;
+  abstract deleteTable(): this;
+  abstract createWrapper(): this;
+  abstract createPart(className: string, wrapperName: '_body' | '_aside', htmlFn: 'getBodyElement' | 'getAsideElement'): this;
+  abstract fillWrapper(): this;
+  abstract uploadWrapper(): this;
+  abstract getBodyElement(city: IRussiaTotal): string;
+  abstract getAsideElement(city: IRussiaTotal): string;
 }
 export type TRenderTable = (data: Array<IRussiaTotal>, withDeletion?: boolean) => void;
 export abstract class ACRegionToggle {
-  data: IRussiaTotal[];
-  self: ACRenderPage;
+  protected _wrapper: HTMLDivElement;
+  protected _favouriteCity: IRussiaTotal;
+  protected _items: string;
+  protected _select: HTMLSelectElement;
+  protected _advantages: string;
 
-  abstract wrapper: HTMLDivElement;
-  abstract favouriteCity: IRussiaTotal;
-  abstract items: string;
-  abstract select: HTMLSelectElement;
-  abstract advantages: string;
+  constructor(public data: IRussiaTotal[], protected _renderPage: ACRenderPage) {}
 
-  constructor(data: IRussiaTotal[], self: ACRenderPage) {
-    this.data = data;
-    this.self = self;
-  }
-
-  abstract createWrapper: () => this;
-  abstract getFavouriteCity: () => this;
-  abstract createSelect: () => this;
-  abstract createOptions: () => this;
-  abstract fillSelect: () => this;
-  abstract createAdvantage: () => this;
-  abstract fillWrapper: () => string;
+  abstract createWrapper(): this;
+  abstract getFavouriteCity(): this;
+  abstract createSelect(): this;
+  abstract createOptions(): this;
+  abstract fillSelect(): this;
+  abstract createAdvantage(): this;
+  abstract fillWrapper(): string;
 }
 export type TRegionToggle = (data: IRussiaTotal[], self: ACRenderPage) => string;
 
