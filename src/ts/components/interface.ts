@@ -2,12 +2,12 @@ export abstract class ACApp {
   abstract currentDate: string;
   abstract userData: IUserData;
   abstract data: Array<IRussiaTotal>;
-  abstract l: IListeners;
-  abstract sortType: ISortType;
-  abstract sortItem: ISortItem;
-  abstract sortedData: Array<IRussiaTotal>;
-  abstract russiaInfo: IRussiaTotal;
-  abstract cancel: boolean;
+  protected _l: IListeners;
+  sortType: ISortType;
+  sortItem: ISortItem;
+  sortedData: Array<IRussiaTotal>;
+  russiaInfo: IRussiaTotal;
+  cancel: boolean;
 
   abstract init(reInit: boolean): Promise<this>;
   abstract createListeners(): this;
@@ -57,41 +57,34 @@ export interface IRussiaTotal {
 }
 
 export abstract class ACRenderPage {
-  protected _headerWrapper: HTMLDivElement;
-  protected _regionToggle: string;
-  protected _header: string;
-  protected _search: string;
-  protected _tableHeader: string;
-  protected _russiaInfo: string;
+  protected _headerWrapper: ACRender;
+  protected _body: ACRender;
 
   constructor(public data: IRussiaTotal[], public options: IUserData) {}
 
-  abstract customizeHeaderWrapper(): this;
   abstract createRegionToggle(): this;
   abstract createHeader(): this;
   abstract createSearch(): this;
-  abstract createTableHeader(): this;
-  abstract fillContent(): this;
-  abstract renderAndInsertTable(): this;
+  abstract renderContent(): this;
   abstract createRussiaInfo(): this;
 }
 export type TRenderPage = (data: Array<IRussiaTotal>, options?: IUserData) => void;
 export abstract class ACRenderTable {
-  protected _wrapper: HTMLUListElement;
+  protected _wrapper: ACRender;
   protected _aside: HTMLLIElement;
   protected _body: HTMLLIElement;
 
   constructor(protected _data: Array<IRussiaTotal>, protected _withDeletion: boolean) {}
 
   abstract deleteTable(): this;
-  abstract createWrapper(): this;
+  protected _createWrapper(): void {};
   abstract createPart(className: string, wrapperName: '_body' | '_aside', htmlFn: 'getBodyElement' | 'getAsideElement'): this;
   abstract fillWrapper(): this;
-  abstract uploadWrapper(): this;
+  abstract getTable(): string;
   abstract getBodyElement(city: IRussiaTotal): string;
   abstract getAsideElement(city: IRussiaTotal): string;
 }
-export type TRenderTable = (data: Array<IRussiaTotal>, withDeletion?: boolean) => void;
+export type TRenderTable = (data: Array<IRussiaTotal>, withDeletion?: boolean) => string;
 export abstract class ACRegionToggle {
   protected _wrapper: HTMLDivElement;
   protected _favouriteCity: IRussiaTotal;
@@ -110,6 +103,27 @@ export abstract class ACRegionToggle {
   abstract fillWrapper(): string;
 }
 export type TRegionToggle = (data: IRussiaTotal[], self: ACRenderPage) => string;
+
+export type TPositions = {
+  [key: string]: {
+    name: string;
+    value: string;
+  }
+}
+export type TRenderItem = {
+  name: string;
+  value: string;
+}
+export abstract class ACRender {
+  protected _places: TPositions = {};
+  protected _container: HTMLElement;
+
+  abstract getTakenPlaces(): number[];
+  abstract addItem(item: TRenderItem, position?: number): boolean;
+  abstract addItems(items: TRenderItem[]): void;
+  abstract render(): void;
+  abstract getHtml(): string;
+}
 
 export interface ILoader {
   class: string;

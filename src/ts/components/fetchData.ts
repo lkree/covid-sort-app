@@ -1,7 +1,7 @@
 import {TFetchData} from './interface';
 
 const getData = (
-  url = 'https://yastat.net/s3/milab/2020/covid19-stat/data/data_struct_5.json'
+  url = 'https://yastat.net/s3/milab/2020/covid19-stat/data/data_struct_12.json'
 ): Promise<TFetchData> => (
   fetch(url).then(result => result.json())
 );

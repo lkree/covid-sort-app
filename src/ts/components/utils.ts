@@ -30,6 +30,7 @@ export const tableSlide = (vw: number) => {
   [...document.querySelectorAll('.infected-table__header-item--else, .infected-table__body')]
     .forEach((part: HTMLElement) => part.style.transform = `translateX(${vw}vw)`);
 };
+export const getLastIndex = (array: any[]) => array.length - 1;
 
 export const headerText = 'Распостронение COVID-19 в России';
 export const TABLE_CLASS = 'infected-table__table';

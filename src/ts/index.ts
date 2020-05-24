@@ -118,7 +118,7 @@ class Init extends ACInit {
 }
 class App extends ACApp {
   data: Array<IRussiaTotal> = [];
-  l: IListeners = {
+  protected _l: IListeners = {
     onHeaderTableClick: () => {},
     onInputChange: () => {},
     onSelectChange: () => {},
@@ -151,7 +151,7 @@ class App extends ACApp {
   createListeners() {
     if (this.cancel) return this;
 
-    this.l = {
+    this._l = {
       onHeaderTableClick: (evt: Event) => {
         onHeaderTableClick(this, sort, refreshTable, evt);
       },
@@ -165,7 +165,7 @@ class App extends ACApp {
         onSlideChange(evt, tableSlide, customDirection);
       },
       onSlideTouch: (evt: TouchEvent) => {
-        onSlideTouch(this.l.onSlideChange, evt);
+        onSlideTouch(this._l.onSlideChange, evt);
       },
       onUpdateButtonClick: () => {
         onUpdateButtonClick(appInit);
@@ -179,17 +179,17 @@ class App extends ACApp {
 
     [...document.querySelectorAll('.infected-table__header-item')]
       .forEach(item => {
-        item.addEventListener('click', this.l.onHeaderTableClick);
+        item.addEventListener('click', this._l.onHeaderTableClick);
       });
-    document.querySelector('.infected-search__input').addEventListener('input', this.l.onInputChange);
-    document.querySelector('.infected-toggle__select').addEventListener('input', this.l.onSelectChange);
+    document.querySelector('.infected-search__input').addEventListener('input', this._l.onInputChange);
+    document.querySelector('.infected-toggle__select').addEventListener('input', this._l.onSelectChange);
     [...document.querySelectorAll('.infected-nav__button')].forEach(button => {
-      button.addEventListener('click', this.l.onSlideChange);
+      button.addEventListener('click', this._l.onSlideChange);
     });
     document.querySelectorAll('.infected-table__header-item--else, .infected-table__body').forEach(li => {
-      li.addEventListener('touchstart', this.l.onSlideTouch);
+      li.addEventListener('touchstart', this._l.onSlideTouch);
     });
-    document.querySelector('.russia-info__update-button').addEventListener('click', this.l.onUpdateButtonClick);
+    document.querySelector('.russia-info__update-button').addEventListener('click', this._l.onUpdateButtonClick);
 
     return this;
   }

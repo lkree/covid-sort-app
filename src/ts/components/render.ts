@@ -6,7 +6,7 @@ import {
   ACRenderPage,
   TRegionToggle,
   ACRegionToggle,
-  ACRenderTable
+  ACRenderTable, ACRender, TRenderItem, TPositions
 } from "./interface";
 import {
   sort,
@@ -19,19 +19,65 @@ import {
   asideElement, bodyElement
 } from "./utils";
 
-class RenderPage extends ACRenderPage {
-  protected _headerWrapper = document.createElement('div');
-  protected _regionToggle = '';
-  protected _header = '';
-  protected _search = '';
-  protected _tableHeader = '';
-  protected _russiaInfo = '';
+class Render extends ACRender {
+  protected _places: TPositions = {};
+  protected _container: HTMLElement;
 
-  customizeHeaderWrapper() {
-    this._headerWrapper.classList.add('infected__header', 'infected-header');
-
-    return this;
+  constructor(container: HTMLElement, values?: { name: string; value: string }[]) {
+    super();
+    this._container = container;
+    values && values.forEach((v, i) => this._places[i] = v);
   }
+
+  getTakenPlaces(): number[] {
+    return Object
+      .keys(this._places)
+      .map(Number);
+  }
+  addItem(item: TRenderItem, position?: number): boolean {
+    const sortKeys = Object.keys(this._places).sort();
+
+    if (position && sortKeys.includes(position.toString())) {
+      return false;
+    }
+
+    this._places[position || sortKeys.length] = item;
+
+    return true;
+  }
+  addItems(items: TRenderItem[]): void {
+    items.forEach(e => this.addItem(e));
+  }
+
+  getHtml(): string {
+    return this._container.outerHTML;
+  }
+  render(): void {
+    Object.keys(this._places)
+      .sort((a: string, b: string) => +b - +a)
+      .forEach(i => {
+        this._container.insertAdjacentHTML('afterbegin', this._places[i].value);
+      })
+  }
+}
+
+class RenderPage extends ACRenderPage {
+  protected _headerWrapper: ACRender;
+  protected _body: ACRender;
+
+  constructor(public data: IRussiaTotal[], public options: IUserData) {
+    super(data, options);
+
+    this._createHeaderWrapper();
+    this._body = new Render(document.body);
+  }
+
+  private _createHeaderWrapper(): void {
+    const _headerWrapper = document.createElement('div');
+    _headerWrapper.classList.add('infected__header', 'infected-header');
+    this._headerWrapper = new Render(_headerWrapper);
+  }
+
   createRegionToggle() {
     const regionToggle: TRegionToggle = (data: IRussiaTotal[], self: ACRenderPage): string => {
       return new RegionToggle(data, self)
@@ -44,43 +90,46 @@ class RenderPage extends ACRenderPage {
         .fillWrapper()
     };
 
-    this._regionToggle = regionToggle(sort(this.data, 'name', 'asc'), this);
+    this._headerWrapper.addItem({
+      name: 'regionToggle',
+      value: regionToggle(sort(this.data, 'name', 'asc'), this),
+    });
 
     return this;
   }
   createHeader() {
-    this._header = headerHTML;
+    this._headerWrapper.addItem({
+        name: 'header',
+        value: headerHTML
+    });
 
     return this;
   }
   createSearch() {
-    this._search = searchHTML;
-
-    return this;
-  }
-  createTableHeader() {
-    this._tableHeader = tableHeaderHTML;
+    this._headerWrapper.addItem({
+      name: 'search',
+      value: searchHTML
+    });
 
     return this;
   }
   createRussiaInfo() {
-    this._russiaInfo = russiaBlock(this.options.russiaInfo, this.options.currentDate);
+    this._headerWrapper.addItem({
+      name: 'russiaInfo',
+      value: russiaBlock(this.options.russiaInfo, this.options.currentDate),
+    });
 
     return this;
   }
-  fillContent() {
-    this._headerWrapper.insertAdjacentHTML('afterbegin', this._russiaInfo);
-    this._headerWrapper.insertAdjacentHTML('afterbegin', this._regionToggle);
-    this._headerWrapper.insertAdjacentHTML('afterbegin', this._header);
-    this._headerWrapper.insertAdjacentHTML('afterbegin', this._search);
+  renderContent() {
+    this._headerWrapper.render();
 
-    document.body.insertAdjacentHTML('afterbegin', this._tableHeader);
-    document.body.insertAdjacentHTML('afterbegin', this._headerWrapper.outerHTML);
-
-    return this;
-  }
-  renderAndInsertTable() {
-    renderTable(this.data);
+    this._body.addItems([
+      { name: 'headerWrapper', value: this._headerWrapper.getHtml() },
+      { name: 'tableHeader', value: tableHeaderHTML },
+      { name: 'table', value: renderTable(this.data) }
+    ]);
+    this._body.render();
 
     return this;
   }
@@ -142,10 +191,14 @@ class RegionToggle extends ACRegionToggle {
   }
 }
 class RenderTable extends ACRenderTable {
-  protected _wrapper = document.createElement('ul');
+  protected _wrapper: ACRender;
   protected _aside = document.createElement('li');
   protected _body = document.createElement('li');
-  protected _data: Array<IRussiaTotal>;
+
+  constructor(protected _data: Array<IRussiaTotal>, protected _withDeletion: boolean) {
+    super(_data, _withDeletion);
+    this._createWrapper();
+  }
 
   deleteTable() {
     this._withDeletion
@@ -153,10 +206,11 @@ class RenderTable extends ACRenderTable {
 
     return this;
   }
-  createWrapper() {
-    this._wrapper.classList.add(TABLE_CLASS);
+  protected _createWrapper(): void {
+    const _wrapper = document.createElement('ul');
+    _wrapper.classList.add(TABLE_CLASS);
 
-    return this;
+    this._wrapper = new Render(_wrapper);
   }
   createPart(className: string, wrapperName: '_body' | '_aside', htmlFn: 'getBodyElement' | 'getAsideElement') {
     this[wrapperName].classList.add(className);
@@ -170,15 +224,16 @@ class RenderTable extends ACRenderTable {
     return this;
   }
   fillWrapper() {
-    this._wrapper.append(this._aside);
-    this._wrapper.append(this._body);
+    this._wrapper.addItems([
+      { name: 'aside', value: this._aside.outerHTML },
+      { name: 'body', value: this._body.outerHTML },
+    ]);
+    this._wrapper.render();
 
     return this;
   }
-  uploadWrapper() {
-    document.body.append(this._wrapper);
-
-    return this;
+  getTable() {
+    return this._wrapper.getHtml();
   }
   getAsideElement(city: IRussiaTotal) {
     return asideElement(city);
@@ -191,26 +246,22 @@ class RenderTable extends ACRenderTable {
 
 export const renderPage: TRenderPage = (data: IRussiaTotal[], options: IUserData): void => {
   new RenderPage(data, options)
-    .customizeHeaderWrapper()
-    .createRegionToggle()
-    .createHeader()
     .createSearch()
-    .createTableHeader()
+    .createHeader()
+    .createRegionToggle()
     .createRussiaInfo()
-    .fillContent()
-    .renderAndInsertTable();
+    .renderContent()
 };
-export const renderTable: TRenderTable = (data, withDeletion = false): void => {
-  new RenderTable(data, withDeletion)
+export const renderTable: TRenderTable = (data, withDeletion = false): string => {
+  return new RenderTable(data, withDeletion)
     .deleteTable()
-    .createWrapper()
     .createPart('infected-table__body', '_body', 'getBodyElement')
     .createPart('infected-table__aside', '_aside', 'getAsideElement')
     .fillWrapper()
-    .uploadWrapper();
+    .getTable();
 };
 
-export const refreshTable: TRenderTable = data => {
+export const refreshTable = (data: IRussiaTotal[]): void => {
   const aside = document.querySelectorAll(`.infected-table__aside-item`);
   const body = document.querySelectorAll(`.infected-table__body-item`);
 
